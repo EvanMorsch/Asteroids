@@ -1,15 +1,13 @@
-//make a "cut flight assist" option, will be super hard to control but fun
-//make fixes to the ship update function
-	//make acc changes in dedicated method
-	//acc values to dedicated variables fro easy changes
-//alter ship speeds (rot, thrust, etc.)
+//flight assist meter and control
 //do a once-over and organize everything
+	//move constants to settings if possible
+	//comment
 //particles
 //collision
 	//(find the angle of collision and interpolate between the two HM heights. this will provide a distance of collision, the othe bodies can use circles as hitboxes)
 	//pause on collide for debugging
-//reload meter
 //move constants to a settings object (practice implementing pseudo-constants)
+//aim asteroids at points on screen so they all swarm in the beginning
 
 init = function() {
 	ctx.init()
@@ -65,67 +63,81 @@ class _asteroid {
 
 class _ship {
 	constructor(x=(SCREENWIDTH/2),y=(SCREENHEIGHT/2)) {
-		this.THRUST = 1;//force applied when engines are on
-		this.MASS = 1000;//kg
+		this.THRUST = 0.1;//force applied when engines are on
 		this.SIZE = 10
 		this.MAXSPEED = 5
-		this.THRUSTINGFORWARD = false
 		this.MUZZLEVELOCITY = 10
 		this.RELOADSPEED = 100//milliseconds
-		
-		this.lastFire = -Infinity
+		this.MAXROT = 0.1;
+		this.ROTSPEED = 0.004
+		this.ROTFRICTION = 5;//speed at which we slow as compared to accelerate
 	
 		this.pos = new _vector(x,y,0)//using the z as rotation
 		this.vel = new _vector(0,0,0)
 		this.acc = new _vector(0,0,0)
+		this.lastFire = -Infinity//last time of fire
+		this.THRUSTINGFORWARD = false//tracks whether to play the thrust animation
+		this.ROTATING = false;
+		this.flightAssist = 1;//0-1
 	}
 	update() {
 		if (keyboard.callKey(" ").poll()) this.shoot()
 	
 		if (keyboard.callKey("w").state) {
-			this.thrust(0.1)
+			this.thrust(1)
 		} else if (keyboard.callKey("s").state) {
-			this.thrust(-0.1)
+			this.thrust(-1)
 		} else {
 			this.thrust(0)
 			if (Math.distance(this.vel,{x:0,y:0})!=0) {
-				this.slow()//slow us down if neot thrusting
+				if (this.flightAssist>=1) this.slow()//slow us down if neot thrusting
 			}
 		}
-		this.limitVel()//it was hard to limit the thrust, so just correct any overages here
-		//the modification of the acc shoudl be done in a seperate method like above
-		if (keyboard.callKey("d").state) {//i feel like i can shorten this next part but for now ill leave it
-			if (Math.abs(this.vel.z)<0.15) {this.acc.z = 0.005} else {this.acc.z = 0}
+		if (this.flightAssist>=0.75) this.limitVel()//it was hard to limit the thrust, so just correct any overages here
+	
+		if (keyboard.callKey("d").state) {
+			this.rotate(1)
 		} else if (keyboard.callKey("a").state) {
-			if (Math.abs(this.vel.z)<0.15) {this.acc.z = -0.005} else {this.acc.z = 0}
+			this.rotate(-1)
 		} else {
-			if (Math.abs(this.vel.z)>0) {
-				this.acc.z = -0.01*(Math.sqrt(Math.abs(this.vel.z))*(this.vel.z/Math.abs(this.vel.z)))
-			} else {this.acc.z = 0}
+			if (Math.abs(this.vel.z)>0 && this.flightAssist>=0.25) {//if needed, slow down
+				this.rotate(-this.ROTFRICTION*(Math.sqrt(Math.abs(this.vel.z))*(this.vel.z/Math.abs(this.vel.z))))
+			} else {this.rotate(0)}
 		}
-		
+		if (this.flightAssist>=0.5) this.limitRot()
+		//update vel and pos
 		this.vel = this.vel.add(this.acc)
 		this.pos = this.pos.add(this.vel)
+		//keep on screen
 		if (this.pos.x>(SCREENWIDTH+this.SIZE)) this.pos.x-=(SCREENWIDTH+this.SIZE);
 		if (this.pos.x<(0-this.SIZE)) this.pos.x+=(SCREENWIDTH+this.SIZE);
 		if (this.pos.y>(SCREENHEIGHT+this.SIZE)) this.pos.y-=(SCREENHEIGHT+this.SIZE);
 		if (this.pos.y<(0-this.SIZE)) this.pos.y+=(SCREENHEIGHT+this.SIZE);
 	}
 	shoot() {
-		if ((Date.now()-this.lastFire)>this.RELOADSPEED) {
+		if ((Date.now()-this.lastFire)>this.RELOADSPEED) {//check if heve cooled down enough
 			bullets.push(new _bullet(this.pos.x,this.pos.y,this.vel.x+(Math.cos(this.pos.z)*this.MUZZLEVELOCITY),this.vel.y+(Math.sin(this.pos.z)*this.MUZZLEVELOCITY)))
-			this.lastFire = Date.now()
+			this.lastFire = Date.now()//update cooldown time
 		}
 	}
-	slow() {
+	slow() {//slow down the positional velocity
 		if (this.vel.x!=0) this.acc.x = -0.05*(Math.sqrt(Math.abs(this.vel.x))*(this.vel.x/Math.abs(this.vel.x)))
 		if (this.vel.y!=0) this.acc.y = -0.05*(Math.sqrt(Math.abs(this.vel.y))*(this.vel.y/Math.abs(this.vel.y)))
 	}
-	limitVel() {
+	limitVel() {//normalize to the max speed
 		var cs = Math.distance(this.vel,{x:0,y:0})//current speed
 		var dir = Math.atan2(this.vel.y,this.vel.x)
 		this.vel.x = Math.cos(dir)*Math.min(this.MAXSPEED,cs)
 		this.vel.y = Math.sin(dir)*Math.min(this.MAXSPEED,cs)
+	}
+	limitRot() {
+		if (this.vel.z == 0) return
+		var dir = this.vel.z/Math.abs(this.vel.z)
+		this.vel.z = Math.min(this.MAXROT,Math.abs(this.vel.z))*dir
+	}
+	rotate(modifier) {
+		this.ROTATING = modifier
+		this.acc.z = this.ROTSPEED*modifier
 	}
 	thrust(modifier) {
 		this.THRUSTINGFORWARD = modifier>0
@@ -144,17 +156,33 @@ class _ship {
 		ctx.stroke()
 		
 		//draw flame
-		//console.log((Math.atan2(this.acc.y-(Math.sin(this.pos.z)),this.acc.x-(Math.cos(this.pos.z)))))
-		if (this.THRUSTINGFORWARD) {//is engine thrusting forward
+		if (this.THRUSTINGFORWARD) {//is engine thrusting forward?
 			var cs = (Math.random()*(this.SIZE*0.5))+(this.SIZE*1.5)//1.5 is flame size, 0.5 is the amount of jitter
 			ctx.beginPath()
-			//ctx.moveTo(this.pos.x+(Math.cos(this.pos.z)*this.SIZE),this.pos.y+(Math.sin(this.pos.z)*this.SIZE))
 			ctx.moveTo(this.pos.x+(Math.cos(this.pos.z+2.25)*(this.SIZE/2)),this.pos.y+(Math.sin(this.pos.z+2.25)*(this.SIZE/2)))
 			ctx.lineTo(this.pos.x-(Math.cos(this.pos.z)*cs),this.pos.y-(Math.sin(this.pos.z)*cs))
 			ctx.lineTo(this.pos.x+(Math.cos(this.pos.z-2.25)*(this.SIZE/2)),this.pos.y+(Math.sin(this.pos.z-2.25)*(this.SIZE/2)))
-			//ctx.closePath();
 			ctx.stroke()
 		}
+		//draw rotating thruster
+		if (Math.abs(this.ROTATING)>0.1) {//is engine thrusting at all?
+			var sp = this.ROTATING<0?//decide where the starting point is
+				{	x:this.pos.x+(Math.cos(this.pos.z+2.25)*(this.SIZE)),
+					y:this.pos.y+(Math.sin(this.pos.z+2.25)*(this.SIZE))}
+				:{	x:this.pos.x+(Math.cos(this.pos.z-2.25)*(this.SIZE)),
+					y:this.pos.y+(Math.sin(this.pos.z-2.25)*(this.SIZE))}
+			ctx.beginPath()
+			ctx.moveTo(sp.x,sp.y)
+			ctx.lineTo(sp.x+(Math.cos(this.pos.z-0.5)*(this.SIZE*-0.3)),sp.y+(Math.sin(this.pos.z-0.5)*(this.SIZE*-0.3)))
+			ctx.lineTo(sp.x+(Math.cos(this.pos.z+0.5)*(this.SIZE*-0.3)),sp.y+(Math.sin(this.pos.z+0.5)*(this.SIZE*-0.3)))
+			ctx.closePath()
+			ctx.stroke()
+		}
+		
+		//draw reload meter
+		ctx.fillText("Re"+(((Date.now()-this.lastFire)/this.RELOADSPEED<1)?"loading...":"ady to fire!"),0,8)
+		ctx.strokeRect(0,10,100,10)
+		ctx.fillRect(0,10,(Math.min((Date.now()-this.lastFire)/this.RELOADSPEED,1))*100,10)
 	}
 }
 
