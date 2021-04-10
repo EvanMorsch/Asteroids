@@ -18,10 +18,9 @@ ctx.changeFontSize = function(ns=12) {//searches for the first non number and re
 		}
 	}
 }
-ctx.strokeCircle = function(x,y,r,color="white") {
+ctx.strokeCircle = function(x,y,r) {
 	ctx.beginPath();
 	ctx.arc(x,y,r,0,Math.PI*2);
-	ctx.strokeStyle = color
 	ctx.stroke()
 }
 ctx.clearScreen = function() {//clears entire screen
