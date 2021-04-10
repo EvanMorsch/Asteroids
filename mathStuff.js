@@ -4,6 +4,9 @@ Math.distance = function(a,b) {
 Math.angle = function(a,b) {
 	return Math.atan2(b.y-a.y,b.x-a.x)
 }
+Math.lerp = function(a, b, f) {
+    return a + f * (b - a);
+}
 
 class _vector {
 	constructor (x,y,z=null) {
