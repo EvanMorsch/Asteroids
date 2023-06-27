@@ -12,7 +12,7 @@ init = function() {
 
 	player = new _ship()
 	asteroids = new Array(10).fill()//make empty array
-	asteroids.forEach(function(a,b){this[b]=new _asteroid()},asteroids)//fill with different asteroids
+	asteroids.forEach(function(a,b){this[b]=new Asteroid()},asteroids)//fill with different asteroids
 	bullets = []
 	particles = []
 	PAUSED = false//used for debugging
@@ -24,33 +24,82 @@ init = function() {
 	loop();
 }
 
-class _particle {//particles are all lines, they spin at random speeds in random directions
-	constructor(a,b,c,fade=-1) {//if fade == -1, itll never fade, c is the point they flee from
-		this.pos = new _vector(
-			(a.x+b.x)/2,(a.y+b.y)/2,
-			Math.atan2(a.y-b.y,a.x-b.x)
+class Fade
+{
+	constructor(start)
+	{
+		this.start = start
+		this.curr = start
+	}
+	fade()
+	{
+		if (this.curr > 0) this.curr--
+	}
+	get amnt()
+	{
+		return this.curr
+	}
+	applyTo(r, g, b)
+	{
+		return "rgba("+(255*(this.curr/this.start))+","+(255*(this.curr/this.start))+","+(255*(this.curr/this.start))+",1)"
+	}
+}
+
+class Particle
+{
+	constructor(pos, vel, speed = 1, fade = -1) {//if fade == -1, itll never fade
+		if (fade < -1) throw new Error("Bad Particle fade val")
+
+		this.pos = new _vector(pos.x, pos.y)
+		this.vel = new _vector(vel.x, vel.y)
+		this.fade = new Fade(fade)
+	}
+}
+class Repulsive_Particle extends Particle
+{
+	constructor(pos, repulsion_point, speed = 1, fade = -1) {
+		if (fade < -1) throw new Error("Bad Repulsive_Particle fade val")
+
+		let vel_dir = Math.atan2(pos.y-repulsion_point.y, pos.x-repulsion_point.x)
+
+		super(
+			pos,
+			new _vector(Math.cos(vel_dir)*speed, Math.sin(vel_dir)*speed),
+			fade
 		)
-		this.SIZE = Math.distance(a,b)/2
-		var dir = Math.atan2(this.pos.y-c.y,this.pos.x-c.x)
-		var spd = (Math.random()*2)
-		this.vel = new _vector(Math.cos(dir)*spd,Math.sin(dir)*spd,(Math.random()*0.1)-0.05)
-		this.fade = fade
-		this.fadeStart = fade
+	}
+}
+
+//pretty sure i made pos.Z the spin
+class Fragment extends Repulsive_Particle
+{//fragments are line particles, they spin at random speeds (0-2) in random directions
+	constructor(a, b, repulsion_point, fade = -1) {
+		if (fade < -1) throw new Error("Bad Fragment fade val")
+
+		super(
+			new _vector((a.x + b.x) / 2, (a.y + b.y) / 2),
+			repulsion_point,
+			Math.random() * 2,
+			fade
+		)
+		this.rot = Math.atan2(a.y - b.y, a.x - b.x)
+		this.rot_vel = (Math.random() * 0.1) - 0.05
+		this.SIZE = Math.distance(a, b) / 2
 	}
 	update() {
 		this.pos = this.pos.add(this.vel)
-		if (this.fade>0) this.fade--
+		this.fade.fade()
 	}
 	draw() {
-		ctx.setColor("rgba("+(255*(this.fade/this.fadeStart))+","+(255*(this.fade/this.fadeStart))+","+(255*(this.fade/this.fadeStart))+",1)")
+		ctx.setColor(this.fade.applyTo(255, 255, 255))
 		ctx.beginPath()
-		ctx.moveTo(this.pos.x+(Math.cos(this.pos.z)*this.SIZE),this.pos.y+(Math.sin(this.pos.z)*this.SIZE))
-		ctx.lineTo(this.pos.x-(Math.cos(this.pos.z)*this.SIZE),this.pos.y-(Math.sin(this.pos.z)*this.SIZE))
+		ctx.moveTo(this.pos.x + (Math.cos(this.rot) * this.SIZE), this.pos.y + (Math.sin(this.rot) * this.SIZE))
+		ctx.lineTo(this.pos.x - (Math.cos(this.rot) * this.SIZE), this.pos.y - (Math.sin(this.rot) * this.SIZE))
 		ctx.stroke()
 	}
 }
 
-class _asteroid {
+class Asteroid {
 	constructor(x=Math.round(Math.random())*SCREENWIDTH,y=Math.round(Math.random())*SCREENHEIGHT,size=3) {//size isnt exactly literal, justa scaler. 1 = 10-15px.
 		this.MAXSIZE = 15*size;//putting these here for now... probably shoudl make them consts somewhere else later
 		this.MINSIZE = 10*size;
@@ -99,8 +148,8 @@ class _asteroid {
 	}
 	explode() {//spawn new asteroids if needed and kill the asteroid
 		this.active = false
-		for (var i=0;i<this.heightMap.length;i++) particles.push(new _particle(this.getLoc(i),this.getLoc((i+1)%this.heightMap.length),this.pos,100))//create particles
-		if ((this.MAXSIZE/15)>1) for (var i=0;i<this.MAXSIZE/15;i++) asteroids.push(new _asteroid(this.pos.x,this.pos.y,(this.MAXSIZE/15)-1))
+		for (var i=0;i<this.heightMap.length;i++) particles.push(new Fragment(this.getLoc(i),this.getLoc((i+1)%this.heightMap.length),this.pos,100))//create particles
+		if ((this.MAXSIZE/15)>1) for (var i=0;i<this.MAXSIZE/15;i++) asteroids.push(new Asteroid(this.pos.x,this.pos.y,(this.MAXSIZE/15)-1))
 	}
 	getLoc(i) {
 		return new _vector(this.pos.x+(Math.cos(((Math.PI*2)*(i/this.heightMap.length))+this.pos.z)*this.heightMap[i]),
@@ -190,10 +239,10 @@ class _ship {
 		var p2 = {x:this.pos.x+(Math.cos(this.pos.z+2.25)*this.SIZE),y:this.pos.y+(Math.sin(this.pos.z+2.25)*this.SIZE)}
 		var p3 = {x:this.pos.x,y:this.pos.y}
 		var p4 = {x:this.pos.x+(Math.cos(this.pos.z-2.25)*this.SIZE),y:this.pos.y+(Math.sin(this.pos.z-2.25)*this.SIZE)}
-		particles.push(	new _particle(p1,p2,p3),
-						new _particle(p2,p3,p3),
-						new _particle(p3,p4,p3),
-						new _particle(p4,p1,p3))
+		particles.push(	new Fragment(p1,p2,p3),
+						new Fragment(p2,p3,p3),
+						new Fragment(p3,p4,p3),
+						new Fragment(p4,p1,p3))
 		GAMEOVER = true
 	}
 	slow() {//slow down the positional velocity
@@ -340,7 +389,7 @@ loop = function() {
 		LEVEL++
 		player.pos = new _vector(SCREENWIDTH/2,SCREENHEIGHT/2,0)
 		asteroids = new Array(10+(LEVEL*2)).fill()//make empty array
-		asteroids.forEach(function(a,b){this[b]=new _asteroid()},asteroids)//fill with different asteroids
+		asteroids.forEach(function(a,b){this[b]=new Asteroid()},asteroids)//fill with different asteroids
 	}
 }
 
