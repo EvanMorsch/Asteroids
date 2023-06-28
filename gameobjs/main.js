@@ -5,6 +5,11 @@
 	//time spent in low flight assist grants more points
 //move constants to a settings object (practice implementing pseudo-constants)
 
+Math.rand_range = function(min, max)
+{
+	return ( Math.random() * (max-min) ) + (min)
+}
+
 init = function() {
 	ctx.init()
 	keyboard = new _keyboard();
@@ -12,7 +17,7 @@ init = function() {
 
 	player = new _ship()
 	asteroids = new Array(10).fill()//make empty array
-	asteroids.forEach(function(a,b){this[b]=new Asteroid()},asteroids)//fill with different asteroids
+	asteroids.forEach(function(a,b){this[b]=new Asteroid(Math.round(Math.random())*SCREENWIDTH, Math.round(Math.random())*SCREENHEIGHT)},asteroids)//fill with different asteroids
 	bullets = []
 	particles = []
 	PAUSED = false//used for debugging
@@ -65,14 +70,14 @@ class Repulsive_Particle extends Particle
 		super(
 			pos,
 			new _vector(Math.cos(vel_dir)*speed, Math.sin(vel_dir)*speed),
+			speed,
 			fade
 		)
 	}
 }
 
-//pretty sure i made pos.Z the spin
 class Fragment extends Repulsive_Particle
-{//fragments are line particles, they spin at random speeds (0-2) in random directions
+{//fragments are line particles, they spin at random speeds (-0.05 - 0.05)
 	constructor(a, b, repulsion_point, fade = -1) {
 		if (fade < -1) throw new Error("Bad Fragment fade val")
 
@@ -99,23 +104,47 @@ class Fragment extends Repulsive_Particle
 	}
 }
 
+class HeightMap
+{
+	constructor(resolution)
+	{
+		this.map = new Array(resolution).fill(0)
+	}
+	randomize(min, max)
+	{
+		this.map.forEach(
+			function(a,b,c){
+				c[b] = Math.rand_range(min, max)
+			}
+		)
+	}
+}
+
+const ASTEROID_SCALE_STEP = 15
+const ASTEROID_SCALE_DEVIATION = 0.1
+const ASTEROID_RESOLUTION_MAX = 15
+const ASTEROID_RESOLUTION_MIN = 10
+const ASTEROID_MAX_START_SPEED = 1
+const ASTEROID_MIN_START_SPEED = 0.1
+const ASTEROID_MAX_START_RSPEED = 0.04
+const ASTEROID_MIN_START_RSPEED = 0
 class Asteroid {
-	constructor(x=Math.round(Math.random())*SCREENWIDTH,y=Math.round(Math.random())*SCREENHEIGHT,size=3) {//size isnt exactly literal, justa scaler. 1 = 10-15px.
-		this.MAXSIZE = 15*size;//putting these here for now... probably shoudl make them consts somewhere else later
-		this.MINSIZE = 10*size;
-		this.MINRES = 10;//amount of peaks
-		this.MAXRES = 15;
-		this.SPEED = 1;//max movement speed
-		this.ROTSPEED = 0.04//felt like a good speed (radians)
+	constructor(x, y, scale=3) {//size isnt exactly literal, justa scaler. 1 = 10-15px.
+		this.MAXSIZE = (ASTEROID_SCALE_STEP*scale) * (1 + ASTEROID_SCALE_DEVIATION) //putting these here for now... probably shoudl make them consts somewhere else later
+		this.MINSIZE = (ASTEROID_SCALE_STEP*scale) * (1 - ASTEROID_SCALE_DEVIATION)
 		this.active = true
 		this.color = "white"
 		
 		this.pos = new _vector(x,y,0)//z is rotation
-		var dir = Math.atan2((Math.random()*SCREENHEIGHT)-y,(Math.random()*SCREENWIDTH)-x)
-		var spd = (Math.random()*this.SPEED)
-		this.vel = new _vector(Math.cos(dir)*spd,Math.sin(dir)*spd,(Math.random()*(this.ROTSPEED*2))-(this.ROTSPEED))
-		this.heightMap = new Array(Math.floor(this.MINRES+(Math.random()*(this.MAXRES-this.MINRES)))).fill()
-		this.heightMap.forEach(function(a,b){this.heightMap[b]=(Math.random()*(this.MAXSIZE-this.MINSIZE))+(this.MINSIZE)},this)//range from (size*10)-(size*15)
+		var dir = Math.rand_range(-0.35, 0.35) + (Math.floor(Math.rand_range(0, 4)) * (Math.PI/2)) + (Math.PI/4) //clip it to 1 rad per quadrant to encourage going toward the center of the screen
+		var spd = Math.rand_range(ASTEROID_MIN_START_SPEED, ASTEROID_MAX_START_SPEED)
+		this.vel = new _vector(
+			Math.cos(dir)*spd, Math.sin(dir)*spd,
+			Math.rand_range(ASTEROID_MIN_START_RSPEED, ASTEROID_MAX_START_RSPEED)
+		)
+
+		this.heightMap = new HeightMap(Math.floor(Math.rand_range(ASTEROID_RESOLUTION_MIN, ASTEROID_RESOLUTION_MAX)))
+		this.heightMap.randomize(this.MINSIZE, this.MAXSIZE)
 	}
 	update() {
 		if (!this.active) return
@@ -140,7 +169,7 @@ class Asteroid {
 	draw() {
 		ctx.setColor(this.color)
 		ctx.beginPath()
-		this.heightMap.forEach(function(a,b) {
+		this.heightMap.map.forEach(function(a,b) {
 			b==0?ctx.moveTo(this.getLoc(b).x,this.getLoc(b).y):ctx.lineTo(this.getLoc(b).x,this.getLoc(b).y)
 		},this)
 		ctx.closePath()
@@ -148,19 +177,19 @@ class Asteroid {
 	}
 	explode() {//spawn new asteroids if needed and kill the asteroid
 		this.active = false
-		for (var i=0;i<this.heightMap.length;i++) particles.push(new Fragment(this.getLoc(i),this.getLoc((i+1)%this.heightMap.length),this.pos,100))//create particles
+		for (var i=0;i<this.heightMap.map.length;i++) particles.push(new Fragment(this.getLoc(i),this.getLoc((i+1)%this.heightMap.map.length),this.pos,100))//create particles
 		if ((this.MAXSIZE/15)>1) for (var i=0;i<this.MAXSIZE/15;i++) asteroids.push(new Asteroid(this.pos.x,this.pos.y,(this.MAXSIZE/15)-1))
 	}
 	getLoc(i) {
-		return new _vector(this.pos.x+(Math.cos(((Math.PI*2)*(i/this.heightMap.length))+this.pos.z)*this.heightMap[i]),
-							this.pos.y+(Math.sin(((Math.PI*2)*(i/this.heightMap.length))+this.pos.z)*this.heightMap[i]) )
+		return new _vector(this.pos.x+(Math.cos(((Math.PI*2)*(i/this.heightMap.map.length))+this.pos.z)*this.heightMap.map[i]),
+							this.pos.y+(Math.sin(((Math.PI*2)*(i/this.heightMap.map.length))+this.pos.z)*this.heightMap.map[i]) )
 	}
 	heightAt(angle) {//returns the radius of the asteroid at a given angle to it
 		//angle = angle-this.pos.z
-		var stepWidth = (Math.PI*2)/(this.heightMap.length)
+		var stepWidth = (Math.PI*2)/(this.heightMap.map.length)
 		var actualAngle = (angle-this.pos.z)<0?(angle-this.pos.z)+((Math.PI*2)*Math.ceil(Math.abs(angle-this.pos.z)/(Math.PI*2))):(angle-this.pos.z)%(Math.PI*2)
-		var h1 = this.heightMap[Math.floor(actualAngle/stepWidth)%this.heightMap.length]
-		var h2 = this.heightMap[Math.ceil(actualAngle/stepWidth)%this.heightMap.length]
+		var h1 = this.heightMap.map[Math.floor(actualAngle/stepWidth)%this.heightMap.map.length]
+		var h2 = this.heightMap.map[Math.ceil(actualAngle/stepWidth)%this.heightMap.map.length]
 		var perc = (actualAngle/stepWidth)%1
 		//lerp h1-h2 by perc
 		
