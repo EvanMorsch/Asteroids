@@ -106,9 +106,9 @@ class Fragment extends Repulsive_Particle
 
 class HeightMap
 {
-	constructor(resolution)
+	constructor(resolution, start_height = 0)
 	{
-		this.map = new Array(resolution).fill(0)
+		this.map = new Array(resolution).fill(start_height)
 	}
 	randomize(min, max)
 	{
@@ -118,22 +118,33 @@ class HeightMap
 			}
 		)
 	}
-	get_coords(i) {
+	get_coords(i, offset = new _vector(0, 0), rot = 0) {
 		return new _vector(
-			Math.cos( (Math.PI*2) * (i/this.map.length) ) * this.map[i], 
-			Math.sin( (Math.PI*2) * (i/this.map.length) ) * this.map[i]
+			offset.x + ( Math.cos( ( (Math.PI * 2) * (i / this.map.length) ) + rot ) * this.map[i] ), 
+			offset.y + ( Math.sin( ( (Math.PI * 2) * (i / this.map.length) ) + rot ) * this.map[i] )
 		)
 	}
-	to_particles()
+	to_particles(offset = new _vector(0, 0), rot = 0)
 	{
 		var ret_particles = []
 
 		for (let i=0;i<this.map.length;i++)
 		{
-			ret_particles.push( new Fragment(this.get_coords(i), this.get_coords((i+1)%this.map.length), new _vector(0, 0), 100) )
+			ret_particles.push(
+				new Fragment( this.get_coords(i, offset, rot), this.get_coords((i+1)%this.map.length, offset, rot), offset, 100 )
+			)
 		}
 		
 		return ret_particles
+	}
+	draw(offset = new _vector(0, 0), rot = 0)
+	{
+		ctx.beginPath()
+		this.map.forEach(function(a, b) {
+			b==0 ? ctx.moveTo(this.get_coords(b, offset, rot).x, this.get_coords(b, offset, rot).y) : ctx.lineTo(this.get_coords(b, offset, rot).x, this.get_coords(b, offset, rot).y)
+		}, this)
+		ctx.closePath()
+		ctx.stroke()
 	}
 }
 
@@ -145,6 +156,7 @@ const ASTEROID_MAX_START_SPEED = 1
 const ASTEROID_MIN_START_SPEED = 0.1
 const ASTEROID_MAX_START_RSPEED = 0.04
 const ASTEROID_MIN_START_RSPEED = 0
+const ASTEROID_CHILD_COUNT = 1
 class Entity
 {
 	constructor(pos)
@@ -157,6 +169,7 @@ class Entity
 
 		this.active = true
 
+		this.heightMap = new HeightMap(3, 1)
 		this.color = "white"
 	}
 	update()
@@ -215,31 +228,22 @@ class Asteroid extends Entity {
 	}
 	draw() {
 		ctx.setColor(this.color)
-		ctx.fillRect(this.pos.x, this.pos.y, 3,3)
-		ctx.beginPath()
-		this.heightMap.map.forEach(function(a, b) {
-			b==0?ctx.moveTo(this.getLoc(b).x, this.getLoc(b).y):ctx.lineTo(this.getLoc(b).x, this.getLoc(b).y)
-		}, this)
-		ctx.closePath()
-		ctx.stroke()
+		ctx.fillRect(this.pos.x, this.pos.y, 3, 3)
+		this.heightMap.draw(this.pos, this.rot)
 	}
 	explode() {//spawn new asteroids if needed and kill the asteroid
 		super.collide()
 
-		particles.push( ...this.heightMap.to_particles().map(
-			function (frag, index, frags)
-			{
-				frag.pos = Math.rotatePoint(frag.pos, new _vector(0,0), this.rot)
-				frag.pos = frag.pos.add(this.pos)
-				return frag
-			}, this
-		) )
+		//create particles
+		particles.push( ...this.heightMap.to_particles(this.pos, this.rot))
 		//create children
-		//if ((this.MAXSIZE/15)>1) for (var i=0;i<this.MAXSIZE/15;i++) asteroids.push(new Asteroid(this.pos, (this.MAXSIZE/15)-1))
-	}
-	getLoc(i) {
-		return new _vector(this.pos.x+(Math.cos(((Math.PI*2)*(i/this.heightMap.map.length))+this.rot)*this.heightMap.map[i]),
-							this.pos.y+(Math.sin(((Math.PI*2)*(i/this.heightMap.map.length))+this.rot)*this.heightMap.map[i]) )
+		if ((this.MAXSIZE/15)>1)
+		{
+			for (var i=0;i<ASTEROID_CHILD_COUNT;i++)
+			{
+				asteroids.push(new Asteroid(this.pos, (this.MAXSIZE/15)-1))
+			}
+		}
 	}
 	heightAt(angle) {//returns the radius of the asteroid at a given angle to it
 		var stepWidth = (Math.PI*2)/(this.heightMap.map.length)
@@ -312,7 +316,7 @@ class _ship {
 	shoot() {
 		SHOWINSTRUCTIONS = false
 		if ((Date.now()-this.lastFire)>this.RELOADSPEED) {//check if heve cooled down enough
-			bullets.push(new _bullet(this.pos.x, this.pos.y, this.vel.x+(Math.cos(this.pos.z)*this.MUZZLEVELOCITY), this.vel.y+(Math.sin(this.pos.z)*this.MUZZLEVELOCITY)))
+			bullets.push(new Bullet(this.pos, this.vel.add(new _vector(Math.cos(this.pos.z)*this.MUZZLEVELOCITY, Math.sin(this.pos.z)*this.MUZZLEVELOCITY))))
 			this.lastFire = Date.now()//update cooldown time
 		}
 	}
@@ -402,28 +406,26 @@ class _ship {
 	}
 }
 
-class _bullet {
-	constructor(x=0, y=0, vx=1, vy=1) {
+class Bullet extends Entity {
+	constructor(pos, vel) {
+		super(pos)
+		this.heightMap = new HeightMap(3, 2)
 		this.SIZE = 2//in px
 		this.active = 50//acts as its "life timer"
-		this.pos = new _vector(x, y)
-		this.vel = new _vector(vx, vy)
+		this.pos = pos
+		this.vel = vel
 		this.birthTime = Date.now()
 	}
 	update() {
+		super.update()
 		this.active--
-		this.pos = this.pos.add(this.vel)
-		if (this.pos.x>(SCREENWIDTH+this.SIZE)) this.pos.x-=SCREENWIDTH+(this.SIZE*2);
-		if (this.pos.x<(0-this.SIZE)) this.pos.x+=SCREENWIDTH+(this.SIZE*2);
-		if (this.pos.y>(SCREENHEIGHT+this.SIZE)) this.pos.y-=SCREENHEIGHT+(this.SIZE*2);
-		if (this.pos.y<(0-this.SIZE)) this.pos.y+=SCREENHEIGHT+(this.SIZE*2);
 	}
 	explode() {
 		this.active = 0//set its life timer to 0
 	}
 	draw() {
 		ctx.setColor("white")
-		ctx.strokeCircle(this.pos.x, this.pos.y, this.SIZE)
+		this.heightMap.draw(this.pos, 0)
 	}
 }
 
