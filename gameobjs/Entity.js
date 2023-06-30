@@ -29,9 +29,9 @@ class Entity
 		if (//bullets overlaps quite a bit once theyre detected but it just because of the speed of them
             collidables.filter(
                 function(a){
-                    for (var inst in this.collision_mask)
+                    for (var inst of this.collision_mask)
                     {
-                        if (a instanceof this.collision_mask[inst]) 
+                        if (a instanceof inst) 
                         {
                             return false
                         }

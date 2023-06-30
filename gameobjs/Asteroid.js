@@ -44,7 +44,7 @@ class Asteroid extends Entity {
 		{
 			for (var i=0;i<ASTEROID_CHILD_COUNT;i++)
 			{
-				asteroids.push(new Asteroid(this.pos, (this.MAXSIZE/15)-1))
+				entities.push(new Asteroid(this.pos, (this.MAXSIZE/15)-1))
 			}
 		}
 	}

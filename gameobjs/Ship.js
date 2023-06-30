@@ -26,7 +26,7 @@ class Ship extends Entity{
 
         super.update(ent)
 
-		if (keyboard.callKey(" ").poll()) this.shoot()
+		if (keyboard.callKey(" ").poll()) this.shoot(ent)
 		if (keyboard.callKey("arrowup").poll()) this.flightAssist = Math.min(1, this.flightAssist+0.25)
 		if (keyboard.callKey("arrowdown").poll()) this.flightAssist = Math.max(0, this.flightAssist-0.25)
 	
@@ -56,10 +56,10 @@ class Ship extends Entity{
 		this.vel = this.vel.add(this.acc)
         this.rot_vel += this.rot_acc
 	}
-	shoot() {
+	shoot(ent) {
 		SHOWINSTRUCTIONS = false
 		if ((Date.now()-this.lastFire)>this.RELOADSPEED) {//check if heve cooled down enough
-			bullets.push(new Bullet(this.pos, this.vel.add(new _vector(Math.cos(this.rot)*this.MUZZLEVELOCITY, Math.sin(this.rot)*this.MUZZLEVELOCITY))))
+			ent.push(new Bullet(this.pos, this.vel.add(new _vector(Math.cos(this.rot)*this.MUZZLEVELOCITY, Math.sin(this.rot)*this.MUZZLEVELOCITY))))
 			this.lastFire = Date.now()//update cooldown time
 		}
 	}

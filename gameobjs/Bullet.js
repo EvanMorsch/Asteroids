@@ -9,8 +9,8 @@ class Bullet extends Entity {
 		this.active = true
         this.collision_mask = [Bullet, Ship]
 	}
-	update() {
-		super.update(asteroids)
+	update(ent) {
+		super.update(ent)
 		this.active = this.active ? (Date.now() - this.birth_time) < BULLET_LIFE : false
 	}
     collide()
