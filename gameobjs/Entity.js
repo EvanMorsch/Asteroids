@@ -41,7 +41,7 @@ class Entity
                 }, this
             )
             .some(function(a){
-                        if (a.active && this.is_colliding(a)) {
+                        if (this.is_colliding(a)) {
                             a.collide()
                             return true;
                         }

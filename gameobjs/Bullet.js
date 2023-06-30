@@ -7,7 +7,7 @@ class Bullet extends Entity {
 		super(pos, vel)
 		this.heightMap = new HeightMap(BULLET_RESOLUTION, BULLET_RADIUS)
 		this.active = true
-        this.collision_mask = [Bullet, _ship]
+        this.collision_mask = [Bullet, Ship]
 	}
 	update() {
 		super.update(asteroids)
