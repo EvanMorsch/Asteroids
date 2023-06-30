@@ -19,7 +19,7 @@ class Ship extends Entity{
 		this.active = true;
         this.radius = 10
 
-        this.collision_mask = [Bullet, Ship]
+        this.collision_mask = [Bullet, Ship, Particle]
 	}
 	update(ent) {
 		if (!this.active) return
@@ -63,14 +63,14 @@ class Ship extends Entity{
 			this.lastFire = Date.now()//update cooldown time
 		}
 	}
-	collide() {//spawn in particles and retire the ship :(
+	collide(ent) {//spawn in particles and retire the ship :(
 		if (!this.active) return
 		this.active = false
 		var p1 = {x:this.pos.x+(Math.cos(this.rot)*this.SIZE), y:this.pos.y+(Math.sin(this.rot)*this.SIZE)}
 		var p2 = {x:this.pos.x+(Math.cos(this.rot+2.25)*this.SIZE), y:this.pos.y+(Math.sin(this.rot+2.25)*this.SIZE)}
 		var p3 = {x:this.pos.x, y:this.pos.y}
 		var p4 = {x:this.pos.x+(Math.cos(this.rot-2.25)*this.SIZE), y:this.pos.y+(Math.sin(this.rot-2.25)*this.SIZE)}
-		particles.push(	new Fragment(p1, p2, p3), 
+		ent.push(	new Fragment(p1, p2, p3), 
 						new Fragment(p2, p3, p3), 
 						new Fragment(p3, p4, p3), 
 						new Fragment(p4, p1, p3))

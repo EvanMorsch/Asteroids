@@ -23,7 +23,7 @@ class Asteroid extends Entity {
 		this.heightMap = new HeightMap(Math.floor(Math.rand_range(ASTEROID_RESOLUTION_MIN, ASTEROID_RESOLUTION_MAX)))
 		this.heightMap.randomize(this.MINSIZE, this.MAXSIZE)
 
-        this.collision_mask = [Asteroid]
+        this.collision_mask = [Asteroid, Particle]
 	}
 	update(ent) {
 		if (!this.active) return
@@ -34,17 +34,17 @@ class Asteroid extends Entity {
 		ctx.fillRect(this.pos.x, this.pos.y, 3, 3)
 		this.heightMap.draw(this.pos, this.rot)
 	}
-	collide() {//spawn new asteroids if needed and kill the asteroid
-		super.collide()
+	collide(ent) {//spawn new asteroids if needed and kill the asteroid
+		super.collide(ent)
 
 		//create particles
-		particles.push( ...this.heightMap.to_particles(this.pos, this.rot))
+		ent.push( ...this.heightMap.to_particles(this.pos, this.rot))
 		//create children
 		if ((this.MAXSIZE/15)>1)
 		{
 			for (var i=0;i<ASTEROID_CHILD_COUNT;i++)
 			{
-				entities.push(new Asteroid(this.pos, (this.MAXSIZE/15)-1))
+				ent.push(new Asteroid(this.pos, (this.MAXSIZE/15)-1))
 			}
 		}
 	}

@@ -17,7 +17,7 @@ class Entity
 
         this.collision_mask = []
 	}
-	update(collidables)
+	update(ent)
 	{
 		if (!this.active) return
 
@@ -27,7 +27,7 @@ class Entity
 		this.keep_on_screen()
         //detect collisions
 		if (//bullets overlaps quite a bit once theyre detected but it just because of the speed of them
-            collidables.filter(
+            ent.filter(
                 function(a){
                     for (var inst of this.collision_mask)
                     {
@@ -42,13 +42,13 @@ class Entity
             )
             .some(function(a){
                         if (this.is_colliding(a)) {
-                            a.collide()
+                            a.collide(ent)
                             return true;
                         }
                         return false;
                     }
             , this)
-        ) this.collide()
+        ) this.collide(ent)
 	}
 	keep_on_screen()
 	{

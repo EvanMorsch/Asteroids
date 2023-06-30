@@ -21,7 +21,6 @@ init = function() {
 		console.log(i)
 		entities.push(new Asteroid(new _vector(Math.round(Math.random())*SCREENWIDTH, Math.round(Math.random())*SCREENHEIGHT)))
 	}
-	particles = []
 	PAUSED = false//used for debugging
 	GAMEOVER = false
 	LEVEL = 1
@@ -34,9 +33,6 @@ init = function() {
 update = function() {
 	entities.forEach(a=>a.update(entities))
 	entities = entities.filter(a=>a.active)
-
-	particles.forEach(a=>a.update())
-	particles = particles.filter(a=>a.fade.curr)
 }
 
 drawGameover = function() {
@@ -52,7 +48,6 @@ draw = function() {
 	ctx.clearScreen()
 	ctx.setColor("white")
 	entities.forEach(a=>a.draw())
-	particles.forEach(a=>a.draw())
 	//draw level text
 	ctx.setColor("white")
 	ctx.font = "20px sans-serif"
