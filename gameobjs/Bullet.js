@@ -7,9 +7,15 @@ class Bullet extends Entity {
 		super(pos, vel)
 		this.heightMap = new HeightMap(BULLET_RESOLUTION, BULLET_RADIUS)
 		this.active = true
+        this.collision_mask = [Bullet, _ship]
 	}
 	update() {
-		super.update()
-		this.active = (Date.now() - this.birth_time) < BULLET_LIFE
+		super.update(asteroids)
+		this.active = this.active ? (Date.now() - this.birth_time) < BULLET_LIFE : false
 	}
+    collide()
+    {
+        super.collide()
+        console.log("BULLCOLL")
+    }
 }
