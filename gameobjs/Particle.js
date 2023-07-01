@@ -7,6 +7,11 @@ class Particle extends Entity
 
 		this.fade = new Fade(fade)
 	}
+    update()
+    {
+        this.pos = this.pos.add(this.vel)
+        this.active = this.fade.value > 0
+    }
     draw(){}
 }
 class Repulsive_Particle extends Particle
@@ -39,10 +44,6 @@ class Fragment extends Repulsive_Particle
 		this.rot = Math.atan2(a.y - b.y, a.x - b.x)
 		this.rot_vel = (Math.random() * 0.1) - 0.05
 		this.SIZE = Math.distance(a, b) / 2
-	}
-	update() {
-		this.pos = this.pos.add(this.vel)
-		this.fade.fade()
 	}
 	draw() {
 		ctx.setColor(this.fade.applyTo(255, 255, 255))

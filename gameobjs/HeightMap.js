@@ -1,23 +1,4 @@
-class Fade
-{
-	constructor(start)
-	{
-		this.start = start
-		this.curr = start
-	}
-	fade()
-	{
-		if (this.curr > 0) this.curr--
-	}
-	get amnt()
-	{
-		return this.curr
-	}
-	applyTo(r, g, b)
-	{
-		return "rgba("+(255*(this.curr/this.start))+", "+(255*(this.curr/this.start))+", "+(255*(this.curr/this.start))+", 1)"
-	}
-}
+const FRAGMENT_FADE_TIME = 1000
 
 class HeightMap
 {
@@ -46,7 +27,7 @@ class HeightMap
 		for (let i=0;i<this.map.length;i++)
 		{
 			ret_particles.push(
-				new Fragment( this.get_coords(i, offset, rot), this.get_coords((i+1)%this.map.length, offset, rot), offset, 100 )
+				new Fragment( this.get_coords(i, offset, rot), this.get_coords((i+1)%this.map.length, offset, rot), offset, FRAGMENT_FADE_TIME )
 			)
 		}
 		
