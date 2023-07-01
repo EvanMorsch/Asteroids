@@ -1,24 +1,3 @@
-class Fade
-{
-	constructor(start)
-	{
-		this.start = start
-		this.curr = start
-	}
-	fade()
-	{
-		if (this.curr > 0) this.curr--
-	}
-	get amnt()
-	{
-		return this.curr
-	}
-	applyTo(r, g, b)
-	{
-		return "rgba("+(255*(this.curr/this.start))+", "+(255*(this.curr/this.start))+", "+(255*(this.curr/this.start))+", 1)"
-	}
-}
-
 class HeightMap
 {
 	constructor(resolution, start_height = 0)
