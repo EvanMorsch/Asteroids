@@ -15,11 +15,17 @@ class Fade
     //get the effective fade value based on time since instantiation
     get value()
     {
-        return this.elapsed / this.start_time
+        //ensure its always from 0-1
+        return Math.max(0,
+                    Math.min(
+                        1 - (this.elapsed / this.fade_time),
+                        1)
+                    )
     }
     //apply fading to rgb value and return formatted string
 	applyTo(r, g, b)
 	{
+        //console.log(this.fade_time, this.start_time, this.elapsed, this.value)
 		return "rgba("+(255*this.value)+", "+(255*this.value)+", "+(255*this.value)+", 1)"
 	}
 }

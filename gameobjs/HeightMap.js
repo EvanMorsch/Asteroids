@@ -1,3 +1,5 @@
+const FRAGMENT_FADE_TIME = 1000
+
 class HeightMap
 {
 	constructor(resolution, start_height = 0)
@@ -25,7 +27,7 @@ class HeightMap
 		for (let i=0;i<this.map.length;i++)
 		{
 			ret_particles.push(
-				new Fragment( this.get_coords(i, offset, rot), this.get_coords((i+1)%this.map.length, offset, rot), offset, 100 )
+				new Fragment( this.get_coords(i, offset, rot), this.get_coords((i+1)%this.map.length, offset, rot), offset, FRAGMENT_FADE_TIME )
 			)
 		}
 		

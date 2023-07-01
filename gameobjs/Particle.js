@@ -10,8 +10,7 @@ class Particle extends Entity
     update()
     {
         this.pos = this.pos.add(this.vel)
-		this.fade.fade()
-        this.active = this.fade.curr > 0
+        this.active = this.fade.value > 0
     }
     draw(){}
 }
