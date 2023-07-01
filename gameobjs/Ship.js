@@ -65,7 +65,7 @@ class Ship extends Entity{
 	}
 	collide(ent) {//spawn in particles and retire the ship :(
 		if (!this.active) return
-		this.active = false
+		super.collide()
 		var p1 = {x:this.pos.x+(Math.cos(this.rot)*this.SIZE), y:this.pos.y+(Math.sin(this.rot)*this.SIZE)}
 		var p2 = {x:this.pos.x+(Math.cos(this.rot+2.25)*this.SIZE), y:this.pos.y+(Math.sin(this.rot+2.25)*this.SIZE)}
 		var p3 = {x:this.pos.x, y:this.pos.y}
