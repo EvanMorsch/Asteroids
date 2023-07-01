@@ -14,19 +14,23 @@ class Particle extends Entity
     }
     draw(){}
 }
-class Repulsive_Particle extends Particle
-{
-	constructor(pos, repulsion_point, speed = 1, fade = -1) {
-		if (fade < -1) throw new Error("Bad Repulsive_Particle fade val")
 
-		let vel_dir = Math.atan2(pos.y-repulsion_point.y, pos.x-repulsion_point.x)
+class Dust extends Particle
+{
+    constructor(pos, vel, fade = -1)
+    {
+        if (fade < -1) throw new Error("Bad Dust fade val")
 
 		super(
 			pos, 
-			new _vector(Math.cos(vel_dir)*speed, Math.sin(vel_dir)*speed), 
-			speed, 
+			vel, 
+			Math.random() * 2, 
 			fade
 		)
+    }
+    draw() {
+		ctx.setColor(this.fade.applyTo(255, 255, 255))
+		ctx.fillRect(this.pos.x, this.pos.y, 1.5, 1.5)
 	}
 }
 

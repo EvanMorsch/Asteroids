@@ -65,7 +65,26 @@ class Entity
 	collide()
 	{
 		this.active = false
+        this.explode()
 	}
+    explode()
+    {
+        for (let i = 0; i < Math.rand_range(5, 10); i++)
+        {
+            let dust_dir = Math.rand_range(0, 2 * Math.PI)
+            let dust_speed = 2.5
+            entities.push(
+                new Dust(
+                    this.pos,
+                    this.vel.add(new _vector(
+                        Math.cos(dust_dir)*dust_speed,
+                        Math.sin(dust_dir)*dust_speed
+                    )),
+                    1000
+                )
+            )
+        }
+    }
     draw() {
 		ctx.setColor(this.color)
 		this.heightMap.draw(this.pos, 0)
