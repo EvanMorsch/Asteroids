@@ -65,15 +65,27 @@ class Ship extends Entity{
 	}
 	collide(ent) {//spawn in particles and retire the ship :(
 		if (!this.active) return
-		this.active = false
+		super.collide()
 		var p1 = {x:this.pos.x+(Math.cos(this.rot)*this.SIZE), y:this.pos.y+(Math.sin(this.rot)*this.SIZE)}
 		var p2 = {x:this.pos.x+(Math.cos(this.rot+2.25)*this.SIZE), y:this.pos.y+(Math.sin(this.rot+2.25)*this.SIZE)}
 		var p3 = {x:this.pos.x, y:this.pos.y}
 		var p4 = {x:this.pos.x+(Math.cos(this.rot-2.25)*this.SIZE), y:this.pos.y+(Math.sin(this.rot-2.25)*this.SIZE)}
-		ent.push(	new Fragment(p1, p2, p3), 
-						new Fragment(p2, p3, p3), 
-						new Fragment(p3, p4, p3), 
-						new Fragment(p4, p1, p3))
+        let p1_2_center = new _vector((p1.x + p2.x) / 2, (p1.y + p2.y) / 2)
+        let p2_3_center = new _vector((p2.x + p3.x) / 2, (p2.y + p3.y) / 2)
+        let p3_4_center = new _vector((p3.x + p4.x) / 2, (p3.y + p4.y) / 2)
+        let p4_1_center = new _vector((p4.x + p1.x) / 2, (p4.y + p1.y) / 2)
+        let p1_2_vel_dir = Math.atan2(p1_2_center.y - this.pos.y, p1_2_center.x - this.pos.x)
+        let p2_3_vel_dir = Math.atan2(p2_3_center.y - this.pos.y, p2_3_center.x - this.pos.x)
+        let p3_4_vel_dir = Math.atan2(p3_4_center.y - this.pos.y, p3_4_center.x - this.pos.x)
+        let p4_1_vel_dir = Math.atan2(p4_1_center.y - this.pos.y, p4_1_center.x - this.pos.x)
+		let p1_2_speed = Math.random()*2
+        let p2_3_speed = Math.random()*2
+        let p3_4_speed = Math.random()*2
+        let p4_1_speed = Math.random()*2
+		ent.push(	new Fragment(p1, p2, new _vector(Math.cos(p1_2_vel_dir)*p1_2_speed, Math.sin(p1_2_vel_dir)*p1_2_speed)), 
+						new Fragment(p2, p3, new _vector(Math.cos(p2_3_vel_dir)*p2_3_speed, Math.sin(p2_3_vel_dir)*p2_3_speed)), 
+						new Fragment(p3, p4, new _vector(Math.cos(p3_4_vel_dir)*p3_4_speed, Math.sin(p3_4_vel_dir)*p3_4_speed)), 
+						new Fragment(p4, p1, new _vector(Math.cos(p4_1_vel_dir)*p4_1_speed, Math.sin(p4_1_vel_dir)*p4_1_speed)))
 		GAMEOVER = true
 	}
 	slow() {//slow down the positional velocity
@@ -99,7 +111,23 @@ class Ship extends Entity{
 		this.THRUSTINGFORWARD = modifier>0
 		this.acc.x = Math.cos(this.rot)*(this.THRUST*modifier)
 		this.acc.y = Math.sin(this.rot)*(this.THRUST*modifier)
-	}
+        if (modifier>0 && Math.random()<0.15)
+        {
+            //let dust_dir = this.rot + Math.PI + Math.rand_range(-0.5, 0.5)
+            let dust_dir = this.rot + Math.PI + Math.rand_range(-0.25, 0.25)
+            let dust_speed = 5
+            entities.push(
+                new Dust(
+                    this.pos,
+                    this.vel.add(new _vector(
+                        Math.cos(dust_dir)*dust_speed,
+                        Math.sin(dust_dir)*dust_speed
+                    )),
+                    1000
+                )
+            )
+        }
+    }
 	draw() {
 		if (!this.active) return
 		ctx.setColor("white")
