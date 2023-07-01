@@ -26,8 +26,18 @@ class HeightMap
 
 		for (let i=0;i<this.map.length;i++)
 		{
+			let endpoint_a = this.get_coords(i, offset, rot)
+			let endpoint_b = this.get_coords((i+1)%this.map.length, offset, rot)
+			let center = new _vector((endpoint_a.x + endpoint_b.x) / 2, (endpoint_a.y + endpoint_b.y) / 2)
+			let vel_dir = Math.atan2(center.y - offset.y, center.x - offset.x)
+			let speed = Math.random()*2
 			ret_particles.push(
-				new Fragment( this.get_coords(i, offset, rot), this.get_coords((i+1)%this.map.length, offset, rot), offset, FRAGMENT_FADE_TIME )
+				new Fragment(
+					endpoint_a,
+					endpoint_b,
+					new _vector(Math.cos(vel_dir)*speed, Math.sin(vel_dir)*speed),
+					FRAGMENT_FADE_TIME
+				)
 			)
 		}
 		

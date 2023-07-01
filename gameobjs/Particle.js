@@ -34,14 +34,15 @@ class Dust extends Particle
 	}
 }
 
-class Fragment extends Repulsive_Particle
+class Fragment extends Particle
 {//fragments are line particles, they spin at random speeds (-0.05 - 0.05)
-	constructor(a, b, repulsion_point, fade = -1) {
+	constructor(a, b, vel, fade = -1)
+    {
 		if (fade < -1) throw new Error("Bad Fragment fade val")
 
 		super(
 			new _vector((a.x + b.x) / 2, (a.y + b.y) / 2), 
-			repulsion_point, 
+			vel, 
 			Math.random() * 2, 
 			fade
 		)
