@@ -5,6 +5,7 @@
 	//time spent in low flight assist grants more points
 //move constants to a settings object (practice implementing pseudo-constants)
 //create new velocity and pos object that contains the rotation as well
+//create world object and pass it into entities
 
 Math.rand_range = function(min, max)
 {
