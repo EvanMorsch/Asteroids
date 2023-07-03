@@ -11,7 +11,7 @@ class Entity
 		this.active = true
         this.birth_time = Date.now()
 
-		this.heightMap = new HeightMap(3, 1)
+		this.heightMap = new HeightMap(3, radius)
         this.radius = radius //will deprecate
 		this.color = "white"
 
@@ -57,6 +57,15 @@ class Entity
 		if (this.pos.y>(SCREENHEIGHT+this.radius)) this.pos.y-=SCREENHEIGHT+(this.radius*2);
 		if (this.pos.y<(0-this.radius)) this.pos.y+=SCREENHEIGHT+(this.radius*2);
 	}
+    set_collision_mask(...masks)
+    {
+        //i dont like using the arguments object, not very readable
+        this.collision_mask = []
+        for (const mask of masks)
+        {
+            this.collision_mask.push(mask)
+        }
+    }
     is_colliding(a)
     {
         //console.log(Math.distance(this.pos, a.pos))
