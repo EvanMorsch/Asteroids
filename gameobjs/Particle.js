@@ -9,7 +9,7 @@ class Particle extends Entity
 
 		this.fade = new Fade(fade)
 
-        this.collision_mask = [Bullet, Ship, Particle, Asteroid]
+        this.set_collision_mask(Bullet, Ship, Particle, Asteroid)
 	}
     update(ent)
     {
