@@ -1,11 +1,10 @@
 const BULLET_LIFE = 1000      //in ms
 const BULLET_RADIUS = 2     //in px
-const BULLET_RESOLUTION = 3 //heightmap resolution for bullet
 
 class Bullet extends Entity {
 	constructor(pos, vel) {
 		super(pos, vel, BULLET_RADIUS)
-        this.set_collision_mask(Bullet, Ship, Particle) //dont hit these things
+        this.set_collision_mask(Bullet, Ship, Particle)
 	}
 	update(ent) {
 		super.update(ent)
