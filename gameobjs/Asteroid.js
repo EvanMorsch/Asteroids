@@ -5,17 +5,17 @@ const ASTEROID_MAX_START_SPEED = 1
 const ASTEROID_MIN_START_SPEED = 0.1
 const ASTEROID_MAX_START_RSPEED = 0.04
 const ASTEROID_CHILD_COUNT = 1
+const ASTEROID_DEFAULT_SIZE = 45
 const ASTEROID_MIN_PARENT_SIZE = 15//smallest px size of a child bearing asteroid
 //how far the velocity will deviate from aiming directly at the center of the screen
 const ASTEROID_START_DIR_DEVIATION = 0.35
+const ASTEROID_DEFAULT_TARGET = {x:SCREENWIDTH/2, y:SCREENHEIGHT/2}
 
 class Asteroid extends Entity {
-	constructor(pos, size=45) {
+	constructor(pos, size=ASTEROID_DEFAULT_SIZE) {
 		//clip it to 1 rad per quadrant to encourage going toward the center of the screen
-		//THIS ISNT RIGHT, AIM FOR THE CENTER THEN ADD RAND_RANGE
-		let dir = Math.rand_range(-ASTEROID_START_DIR_DEVIATION, ASTEROID_START_DIR_DEVIATION)
-				  + (Math.floor(Math.rand_range(0, 4)) * (Math.PI/2)) 
-				  + (Math.PI/4)
+		let dir = 	Math.atan2(ASTEROID_DEFAULT_TARGET.y-pos.y, ASTEROID_DEFAULT_TARGET.x-pos.x)
+					+ Math.rand_range(-ASTEROID_START_DIR_DEVIATION, ASTEROID_START_DIR_DEVIATION)
 		let spd = Math.rand_range(ASTEROID_MIN_START_SPEED, ASTEROID_MAX_START_SPEED)
 		let vel = new _vector(Math.cos(dir)*spd, Math.sin(dir)*spd)
 
