@@ -1,5 +1,5 @@
 class Ship extends Entity{
-	constructor(pos = new _vector(SCREENWIDTH/2, SCREENHEIGHT/2)) {
+	constructor(pos = new Position2D(SCREENWIDTH/2, SCREENHEIGHT/2)) {
         super(pos)
 		this.THRUST = 0.1;//force applied when engines are on
 		this.SIZE = 10
@@ -10,7 +10,7 @@ class Ship extends Entity{
 		this.ROTSPEED = 0.004
 		this.ROTFRICTION = 5;//speed at which we slow as compared to accelerate
 	
-		this.acc = new _vector(0, 0)
+		this.acc = new Position2D(0, 0)
         this.rot_acc = 0
 		this.lastFire = -Infinity//last time of fire
 		this.THRUSTINGFORWARD = false//tracks whether to play the thrust animation
@@ -59,7 +59,7 @@ class Ship extends Entity{
 	shoot(ent) {
 		SHOWINSTRUCTIONS = false
 		if ((Date.now()-this.lastFire)>this.RELOADSPEED) {//check if heve cooled down enough
-			ent.push(new Bullet(this.pos, this.vel.add(new _vector(Math.cos(this.rot)*this.MUZZLEVELOCITY, Math.sin(this.rot)*this.MUZZLEVELOCITY))))
+			ent.push(new Bullet(this.pos, this.vel.add(new Position2D(Math.cos(this.rot)*this.MUZZLEVELOCITY, Math.sin(this.rot)*this.MUZZLEVELOCITY))))
 			this.lastFire = Date.now()//update cooldown time
 		}
 	}
@@ -70,10 +70,10 @@ class Ship extends Entity{
 		var p2 = {x:this.pos.x+(Math.cos(this.rot+2.25)*this.SIZE), y:this.pos.y+(Math.sin(this.rot+2.25)*this.SIZE)}
 		var p3 = {x:this.pos.x, y:this.pos.y}
 		var p4 = {x:this.pos.x+(Math.cos(this.rot-2.25)*this.SIZE), y:this.pos.y+(Math.sin(this.rot-2.25)*this.SIZE)}
-        let p1_2_center = new _vector((p1.x + p2.x) / 2, (p1.y + p2.y) / 2)
-        let p2_3_center = new _vector((p2.x + p3.x) / 2, (p2.y + p3.y) / 2)
-        let p3_4_center = new _vector((p3.x + p4.x) / 2, (p3.y + p4.y) / 2)
-        let p4_1_center = new _vector((p4.x + p1.x) / 2, (p4.y + p1.y) / 2)
+        let p1_2_center = new Position2D((p1.x + p2.x) / 2, (p1.y + p2.y) / 2)
+        let p2_3_center = new Position2D((p2.x + p3.x) / 2, (p2.y + p3.y) / 2)
+        let p3_4_center = new Position2D((p3.x + p4.x) / 2, (p3.y + p4.y) / 2)
+        let p4_1_center = new Position2D((p4.x + p1.x) / 2, (p4.y + p1.y) / 2)
         let p1_2_vel_dir = Math.atan2(p1_2_center.y - this.pos.y, p1_2_center.x - this.pos.x)
         let p2_3_vel_dir = Math.atan2(p2_3_center.y - this.pos.y, p2_3_center.x - this.pos.x)
         let p3_4_vel_dir = Math.atan2(p3_4_center.y - this.pos.y, p3_4_center.x - this.pos.x)
@@ -82,10 +82,10 @@ class Ship extends Entity{
         let p2_3_speed = Math.random()*2
         let p3_4_speed = Math.random()*2
         let p4_1_speed = Math.random()*2
-		ent.push(	new Fragment(p1, p2, new _vector(Math.cos(p1_2_vel_dir)*p1_2_speed, Math.sin(p1_2_vel_dir)*p1_2_speed)), 
-						new Fragment(p2, p3, new _vector(Math.cos(p2_3_vel_dir)*p2_3_speed, Math.sin(p2_3_vel_dir)*p2_3_speed)), 
-						new Fragment(p3, p4, new _vector(Math.cos(p3_4_vel_dir)*p3_4_speed, Math.sin(p3_4_vel_dir)*p3_4_speed)), 
-						new Fragment(p4, p1, new _vector(Math.cos(p4_1_vel_dir)*p4_1_speed, Math.sin(p4_1_vel_dir)*p4_1_speed)))
+		ent.push(	new Fragment(p1, p2, new Position2D(Math.cos(p1_2_vel_dir)*p1_2_speed, Math.sin(p1_2_vel_dir)*p1_2_speed)), 
+						new Fragment(p2, p3, new Position2D(Math.cos(p2_3_vel_dir)*p2_3_speed, Math.sin(p2_3_vel_dir)*p2_3_speed)), 
+						new Fragment(p3, p4, new Position2D(Math.cos(p3_4_vel_dir)*p3_4_speed, Math.sin(p3_4_vel_dir)*p3_4_speed)), 
+						new Fragment(p4, p1, new Position2D(Math.cos(p4_1_vel_dir)*p4_1_speed, Math.sin(p4_1_vel_dir)*p4_1_speed)))
 		GAMEOVER = true
 	}
 	slow() {//slow down the positional velocity
@@ -119,7 +119,7 @@ class Ship extends Entity{
             entities.push(
                 new Dust(
                     this.pos,
-                    this.vel.add(new _vector(
+                    this.vel.add(new Position2D(
                         Math.cos(dust_dir)*dust_speed,
                         Math.sin(dust_dir)*dust_speed
                     )),

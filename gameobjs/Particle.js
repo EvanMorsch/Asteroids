@@ -40,7 +40,7 @@ class Fragment extends Particle
 {
 	constructor(a, b, vel, fade = -1)
     {
-        let frag_center = new _vector((a.x + b.x) / 2, (a.y + b.y) / 2)
+        let frag_center = new Position2D((a.x + b.x) / 2, (a.y + b.y) / 2)
 		super(
 			frag_center,
 			vel, 

@@ -23,7 +23,12 @@ init = function() {
 	for (let i of Array(10))
 	{
 		console.log(i)
-		entities.push(new Asteroid(new _vector(Math.round(Math.random())*SCREENWIDTH, Math.round(Math.random())*SCREENHEIGHT)))
+		entities.push(new Asteroid(
+			new Position2D(
+				Math.round(Math.random())*SCREENWIDTH,
+				Math.round(Math.random())*SCREENHEIGHT
+			)
+		))
 	}
 	PAUSED = false//used for debugging
 	GAMEOVER = false
@@ -70,10 +75,14 @@ loop = function() {
 	if (GAMEOVER) drawGameover()
 	if (entities.length==1) {
 		LEVEL++
-		player.pos = new _vector(SCREENWIDTH/2, SCREENHEIGHT/2, 0)
 		for (let i in new Array(10))
 		{
-			entities.push(new Asteroid(new _vector(Math.round(Math.random())*SCREENWIDTH, Math.round(Math.random())*SCREENHEIGHT)))
+			entities.push(new Asteroid(
+				new Position2D(
+					Math.round(Math.random())*SCREENWIDTH,
+					Math.round(Math.random())*SCREENHEIGHT
+				)
+			))
 		}
 	}
 }

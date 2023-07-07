@@ -1,10 +1,11 @@
-const ENTITY_DEFAULT_LIFETIME = 1000
+const ENTITY_DEFAULT_FRAGMENT_LIFETIME = 1000
+const ENTITY_DEFAULT_DUST_LIFETIME = 1000
 const ENTITY_DUST_VEL = 2.5
 const ENTITY_DUST_COUNT = 5
 
 class Entity
 {
-	constructor(pos, vel = new _vector(0, 0), radius=10)
+	constructor(pos, vel = new Position2D(0, 0), radius=10)
 	{
 		this.pos = pos
 		this.rot = 0
@@ -16,9 +17,9 @@ class Entity
         this.birth_time = Date.now()
 
 		this.heightMap = new HeightMap(3, radius)
-        this.particle_lifetime = ENTITY_DEFAULT_LIFETIME
+        this.fragment_lifetime = ENTITY_DEFAULT_FRAGMENT_LIFETIME
+        this.dust_lifetime = ENTITY_DEFAULT_DUST_LIFETIME
 
-        this.radius = radius //will deprecate in favor of heightmap size tracking
 		this.color = "white"
 
         this.collision_mask = []
@@ -58,10 +59,10 @@ class Entity
 	}
 	keep_on_screen()
 	{
-		if (this.pos.x>(SCREENWIDTH+this.radius)) this.pos.x-=SCREENWIDTH+(this.radius*2);
-		if (this.pos.x<(0-this.radius)) this.pos.x+=SCREENWIDTH+(this.radius*2);
-		if (this.pos.y>(SCREENHEIGHT+this.radius)) this.pos.y-=SCREENHEIGHT+(this.radius*2);
-		if (this.pos.y<(0-this.radius)) this.pos.y+=SCREENHEIGHT+(this.radius*2);
+		if (this.pos.x>(SCREENWIDTH+this.heightMap.max)) this.pos.x-=SCREENWIDTH+(this.heightMap.max*2);
+		if (this.pos.x<(0-this.heightMap.max)) this.pos.x+=SCREENWIDTH+(this.heightMap.max*2);
+		if (this.pos.y>(SCREENHEIGHT+this.heightMap.max)) this.pos.y-=SCREENHEIGHT+(this.heightMap.max*2);
+		if (this.pos.y<(0-this.heightMap.max)) this.pos.y+=SCREENHEIGHT+(this.heightMap.max*2);
 	}
     set_collision_mask(...masks)
     {
@@ -75,7 +76,7 @@ class Entity
     is_colliding(a)
     {
         //console.log(Math.distance(this.pos, a.pos))
-        return Math.distance(this.pos, a.pos) <= this.radius+a.radius
+        return Math.distance(this.pos, a.pos) <= this.heightMap.max+a.heightMap.max
     }
 	collide()
 	{
@@ -91,7 +92,7 @@ class Entity
             this.rot
         )
         fragments.forEach(
-            (a)=>{a.fade.fade_time = this.particle_lifetime}
+            (a)=>{a.fade.fade_time = this.fragment_lifetime}
         )
 		entities.push(...fragments)
 
@@ -101,11 +102,11 @@ class Entity
                 let dust_dir = Math.rand_range(0, 2 * Math.PI)
                 return new Dust(
                     this.pos,
-                    this.vel.add(new _vector(
+                    this.vel.add(new Position2D(
                         Math.cos(dust_dir)*ENTITY_DUST_VEL,
                         Math.sin(dust_dir)*ENTITY_DUST_VEL
                     )),
-                    this.particle_lifetime
+                    this.dust_lifetime
                 )
             }, this
         )
