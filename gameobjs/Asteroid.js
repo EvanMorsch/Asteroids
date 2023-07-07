@@ -17,7 +17,7 @@ class Asteroid extends Entity {
 		let dir = 	Math.atan2(ASTEROID_DEFAULT_TARGET.y-pos.y, ASTEROID_DEFAULT_TARGET.x-pos.x)
 					+ Math.rand_range(-ASTEROID_START_DIR_DEVIATION, ASTEROID_START_DIR_DEVIATION)
 		let spd = Math.rand_range(ASTEROID_MIN_START_SPEED, ASTEROID_MAX_START_SPEED)
-		let vel = new Position2D(Math.cos(dir)*spd, Math.sin(dir)*spd)
+		let vel = Position2D.fromRad(spd, dir)
 
 		super(pos, vel, size)
 

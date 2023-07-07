@@ -102,10 +102,7 @@ class Entity
                 let dust_dir = Math.rand_range(0, 2 * Math.PI)
                 return new Dust(
                     this.pos,
-                    this.vel.add(new Position2D(
-                        Math.cos(dust_dir)*ENTITY_DUST_VEL,
-                        Math.sin(dust_dir)*ENTITY_DUST_VEL
-                    )),
+                    this.vel.add(Position2D.fromRad(ENTITY_DUST_VEL, dust_dir)),
                     this.dust_lifetime
                 )
             }, this

@@ -1,13 +1,8 @@
-//do a once-over and organize everything
-	//move constants to settings if possible
-	//comment
 //points
 	//time spent in low flight assist grants more points
-//move constants to a settings object (practice implementing pseudo-constants)
-//create new velocity and pos object that contains the rotation as well
+	//large asts are worth less
 //create world object and pass it into entities
-//add attrib to entity to control explosion particles (so ship doesnt double explode)
-//make static vectro function to support from_rad(r,theta)
+//use thrust to limit ship vel
 
 Math.rand_range = function(min, max)
 {

@@ -21,10 +21,10 @@ class HeightMap
 		)
 	}
 	get_coords(i, offset = new Position2D(0, 0), rot = 0) {
-		return new Position2D(
-			offset.x + ( Math.cos( ( (Math.PI * 2) * (i / this.map.length) ) + rot ) * this.map[i] ), 
-			offset.y + ( Math.sin( ( (Math.PI * 2) * (i / this.map.length) ) + rot ) * this.map[i] )
-		)
+		return Position2D.fromRad(
+			this.map[i],
+			( (Math.PI * 2) * (i / this.map.length) ) + rot
+		).add(offset)
 	}
 	to_particles(offset = new Position2D(0, 0), rot = 0)
 	{
@@ -41,7 +41,7 @@ class HeightMap
 				new Fragment(
 					endpoint_a,
 					endpoint_b,
-					new Position2D(Math.cos(vel_dir)*speed, Math.sin(vel_dir)*speed)
+					new Position2D(speed, vel_dir)
 				)
 			)
 		}
