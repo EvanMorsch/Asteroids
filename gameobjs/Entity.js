@@ -78,6 +78,10 @@ class Entity
 	}
     explode()
     {
+
+		//create particles
+		entities.push( ...this.heightMap.to_particles(this.pos, this.rot))
+
         for (let i = 0; i < Math.rand_range(5, 10); i++)
         {
             let dust_dir = Math.rand_range(0, 2 * Math.PI)

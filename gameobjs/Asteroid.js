@@ -1,60 +1,45 @@
-const ASTEROID_SCALE_STEP = 15
 const ASTEROID_SCALE_DEVIATION = 0.1
-const ASTEROID_RESOLUTION_MAX = 15
-const ASTEROID_RESOLUTION_MIN = 10
+const ASTEROID_RESOLUTION = 10
 const ASTEROID_MAX_START_SPEED = 1
 const ASTEROID_MIN_START_SPEED = 0.1
 const ASTEROID_MAX_START_RSPEED = 0.04
-const ASTEROID_MIN_START_RSPEED = 0
 const ASTEROID_CHILD_COUNT = 1
+const ASTEROID_CHILD_SCALE = 0.5
+const ASTEROID_DEFAULT_SIZE = 45
+const ASTEROID_MIN_PARENT_SIZE = 15//smallest px size of a child bearing asteroid
+//how far the velocity will deviate from aiming directly at the center of the screen
+const ASTEROID_START_DIR_DEVIATION = 0.35
+const ASTEROID_DEFAULT_TARGET = {x:SCREENWIDTH/2, y:SCREENHEIGHT/2}
 
 class Asteroid extends Entity {
-	constructor(pos, scale=3) {//size isnt exactly literal, justa scaler. 1 = 10-15px.
-		super(pos)
-		this.MAXSIZE = (ASTEROID_SCALE_STEP*scale) * (1 + ASTEROID_SCALE_DEVIATION) //putting these here for now... probably shoudl make them consts somewhere else later
-		this.MINSIZE = (ASTEROID_SCALE_STEP*scale) * (1 - ASTEROID_SCALE_DEVIATION)
-		this.radius = this.MAXSIZE //update super radius JUST AN ESTIMATE FOR NOW
-		
-		var dir = Math.rand_range(-0.35, 0.35) + (Math.floor(Math.rand_range(0, 4)) * (Math.PI/2)) + (Math.PI/4) //clip it to 1 rad per quadrant to encourage going toward the center of the screen
-		var spd = Math.rand_range(ASTEROID_MIN_START_SPEED, ASTEROID_MAX_START_SPEED)
-		this.vel = new _vector(Math.cos(dir)*spd, Math.sin(dir)*spd)
+	constructor(pos, size=ASTEROID_DEFAULT_SIZE) {
+		//clip it to 1 rad per quadrant to encourage going toward the center of the screen
+		let dir = 	Math.atan2(ASTEROID_DEFAULT_TARGET.y-pos.y, ASTEROID_DEFAULT_TARGET.x-pos.x)
+					+ Math.rand_range(-ASTEROID_START_DIR_DEVIATION, ASTEROID_START_DIR_DEVIATION)
+		let spd = Math.rand_range(ASTEROID_MIN_START_SPEED, ASTEROID_MAX_START_SPEED)
+		let vel = new _vector(Math.cos(dir)*spd, Math.sin(dir)*spd)
+
+		super(pos, vel, size)
+
 		this.rot_vel = Math.rand_range(-ASTEROID_MAX_START_RSPEED, ASTEROID_MAX_START_RSPEED)
 
-		this.heightMap = new HeightMap(Math.floor(Math.rand_range(ASTEROID_RESOLUTION_MIN, ASTEROID_RESOLUTION_MAX)))
-		this.heightMap.randomize(this.MINSIZE, this.MAXSIZE)
+		this.heightMap = new HeightMap(ASTEROID_RESOLUTION)
+		this.heightMap.randomize(
+			this.radius*(1-ASTEROID_SCALE_DEVIATION),
+			this.radius*(1+ASTEROID_SCALE_DEVIATION)
+		)
 
-        this.collision_mask = [Asteroid, Particle]
+        this.set_collision_mask(Asteroid, Particle)
 	}
-	update(ent) {
-		if (!this.active) return
-		super.update(ent) //change this to accept all entities and filter based on mask
-    }
-	draw() {
-		ctx.setColor(this.color)
-		ctx.fillRect(this.pos.x, this.pos.y, 3, 3)
-		this.heightMap.draw(this.pos, this.rot)
-	}
-	collide(ent) {//spawn new asteroids if needed and kill the asteroid
-		super.collide(ent)
-
-		//create particles
-		ent.push( ...this.heightMap.to_particles(this.pos, this.rot))
+	collide() {//spawn new asteroids if needed and kill the asteroid
+		super.collide(entities)
 		//create children
-		if ((this.MAXSIZE/15)>1)
+		if (this.radius >= ASTEROID_MIN_PARENT_SIZE)
 		{
 			for (var i=0;i<ASTEROID_CHILD_COUNT;i++)
 			{
-				ent.push(new Asteroid(this.pos, (this.MAXSIZE/15)-1))
+				entities.push(new Asteroid(this.pos, this.radius*ASTEROID_CHILD_SCALE))
 			}
 		}
-	}
-	heightAt(angle) {//returns the radius of the asteroid at a given angle to it
-		var stepWidth = (Math.PI*2)/(this.heightMap.map.length)
-		var actualAngle = (angle-this.rot)<0?(angle-this.rot)+((Math.PI*2)*Math.ceil(Math.abs(angle-this.rot)/(Math.PI*2))):(angle-this.rot)%(Math.PI*2)
-		var h1 = this.heightMap.map[Math.floor(actualAngle/stepWidth)%this.heightMap.map.length]
-		var h2 = this.heightMap.map[Math.ceil(actualAngle/stepWidth)%this.heightMap.map.length]
-		var perc = (actualAngle/stepWidth)%1
-		
-		return Math.lerp(h1, h2, perc)
 	}
 }

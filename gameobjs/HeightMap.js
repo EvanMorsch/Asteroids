@@ -43,6 +43,15 @@ class HeightMap
 		
 		return ret_particles
 	}
+	heightAt(angle) {//returns the radius of the heightmap at a given angle to it
+		/*var stepWidth = (Math.PI*2)/(this.heightMap.map.length)
+		var actualAngle = (angle-this.rot)<0?(angle-this.rot)+((Math.PI*2)*Math.ceil(Math.abs(angle-this.rot)/(Math.PI*2))):(angle-this.rot)%(Math.PI*2)
+		var h1 = this.heightMap.map[Math.floor(actualAngle/stepWidth)%this.heightMap.map.length]
+		var h2 = this.heightMap.map[Math.ceil(actualAngle/stepWidth)%this.heightMap.map.length]
+		var perc = (actualAngle/stepWidth)%1
+		
+		return Math.lerp(h1, h2, perc)*/
+	}
 	draw(offset = new _vector(0, 0), rot = 0)
 	{
 		ctx.beginPath()
