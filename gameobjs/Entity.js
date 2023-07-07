@@ -24,7 +24,7 @@ class Entity
 
         this._collision_mask = []
 	}
-	update(ent)
+	update()
 	{
 		if (!this.active) return
 
@@ -33,29 +33,32 @@ class Entity
 
 		this.keep_on_screen()
         //detect collisions
-		if (//bullets overlaps quite a bit once theyre detected but it just because of the speed of them
-            ent.filter(
-                function(a){
-                    for (var inst of this._collision_mask)
+        let collidables = entities.filter(
+            //filter for non-masked entities
+            function(a)
+            {
+                for (var inst of this._collision_mask)
+                {
+                    if (a instanceof inst) 
                     {
-                        if (a instanceof inst) 
-                        {
-                            return false
-                        }
+                        return false
                     }
-                    //console.log(a)
+                }
+                return true
+            }, this
+        )
+        //we dont actually use some for its intended purpose...
+        //we just want a foreach that stops at a success
+        collidables.some(
+            function(a)
+            {
+                if (this.is_colliding(a)) {
+                    a.collide(this) //let the other know theyre being collided with
+                    this.collide(a) //let them know who collided with eachother
                     return true
-                }, this
-            )
-            .some(function(a){
-                        if (this.is_colliding(a)) {
-                            a.collide(ent)
-                            return true;
-                        }
-                        return false;
-                    }
-            , this)
-        ) this.collide(ent)
+                }
+            }, this
+        )
 	}
 	keep_on_screen()
 	{
@@ -75,18 +78,15 @@ class Entity
     }
     is_colliding(a)
     {
-        //console.log(Math.distance(this.pos, a.pos))
-        return Math.distance(this.pos, a.pos) <= this.heightMap.max+a.heightMap.max
+        let dir_a_t = Math.atan2(this.pos.y-a.pos.y, this.pos.x-a.pos.x)
+        let dir_t_a = Math.atan2(a.pos.y-this.pos.y, a.pos.x-this.pos.x)
+        return Math.distance(this.pos, a.pos) <= this.heightMap.height_at(dir_t_a, this)+a.heightMap.height_at(dir_a_t, a)
     }
 	collide()
 	{
 		this.active = false
-        this.explode()
-	}
-    explode()
-    {
 
-		//create particles
+        //create particles
         let fragments = this.heightMap.to_particles(
             this.pos,
             this.rot
@@ -108,7 +108,7 @@ class Entity
             }, this
         )
         entities.push(...dust)
-    }
+	}
     draw() {
 		ctx.setColor(this.color)
 		this.heightMap.draw(this.pos, 0)

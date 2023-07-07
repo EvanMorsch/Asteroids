@@ -15,7 +15,7 @@ init = function() {
 	keyboard.addKey(" ", true)
 
 	entities = [new Ship()]
-	for (let i of Array(10))
+	for (let i of Array(1))
 	{
 		console.log(i)
 		entities.push(new Asteroid(

@@ -115,6 +115,7 @@ class Ship extends Entity{
         }
     }
 	draw() {
+		super.draw()
 		if (!this.active) return
 		ctx.setColor("white")
 		//draw ship itself
