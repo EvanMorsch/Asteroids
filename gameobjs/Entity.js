@@ -1,3 +1,7 @@
+const ENTITY_DEFAULT_LIFETIME = 1000
+const ENTITY_DUST_VEL = 2.5
+const ENTITY_DUST_COUNT = 5
+
 class Entity
 {
 	constructor(pos, vel = new _vector(0, 0), radius=10)
@@ -12,7 +16,9 @@ class Entity
         this.birth_time = Date.now()
 
 		this.heightMap = new HeightMap(3, radius)
-        this.radius = radius //will deprecate
+        this.particle_lifetime = ENTITY_DEFAULT_LIFETIME
+
+        this.radius = radius //will deprecate in favor of heightmap size tracking
 		this.color = "white"
 
         this.collision_mask = []
@@ -80,23 +86,30 @@ class Entity
     {
 
 		//create particles
-		entities.push( ...this.heightMap.to_particles(this.pos, this.rot))
+        let fragments = this.heightMap.to_particles(
+            this.pos,
+            this.rot
+        )
+        fragments.forEach(
+            (a)=>{a.fade.fade_time = this.particle_lifetime}
+        )
+		entities.push(...fragments)
 
-        for (let i = 0; i < Math.rand_range(5, 10); i++)
-        {
-            let dust_dir = Math.rand_range(0, 2 * Math.PI)
-            let dust_speed = 2.5
-            entities.push(
-                new Dust(
+        //create dust
+        let dust = new Array(ENTITY_DUST_COUNT).fill().map(
+            function() {
+                let dust_dir = Math.rand_range(0, 2 * Math.PI)
+                return new Dust(
                     this.pos,
                     this.vel.add(new _vector(
-                        Math.cos(dust_dir)*dust_speed,
-                        Math.sin(dust_dir)*dust_speed
+                        Math.cos(dust_dir)*ENTITY_DUST_VEL,
+                        Math.sin(dust_dir)*ENTITY_DUST_VEL
                     )),
-                    1000
+                    this.particle_lifetime
                 )
-            )
-        }
+            }, this
+        )
+        entities.push(...dust)
     }
     draw() {
 		ctx.setColor(this.color)

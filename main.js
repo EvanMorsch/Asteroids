@@ -7,6 +7,7 @@
 //create new velocity and pos object that contains the rotation as well
 //create world object and pass it into entities
 //add attrib to entity to control explosion particles (so ship doesnt double explode)
+//make static vectro function to support from_rad(r,theta)
 
 Math.rand_range = function(min, max)
 {
