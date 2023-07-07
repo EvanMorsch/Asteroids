@@ -22,7 +22,7 @@ class Entity
 
 		this.color = "white"
 
-        this.collision_mask = []
+        this._collision_mask = []
 	}
 	update(ent)
 	{
@@ -36,7 +36,7 @@ class Entity
 		if (//bullets overlaps quite a bit once theyre detected but it just because of the speed of them
             ent.filter(
                 function(a){
-                    for (var inst of this.collision_mask)
+                    for (var inst of this._collision_mask)
                     {
                         if (a instanceof inst) 
                         {
@@ -67,10 +67,10 @@ class Entity
     set_collision_mask(...masks)
     {
         //i dont like using the arguments object, not very readable
-        this.collision_mask = []
+        this._collision_mask = []
         for (const mask of masks)
         {
-            this.collision_mask.push(mask)
+            this._collision_mask.push(mask)
         }
     }
     is_colliding(a)

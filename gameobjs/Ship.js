@@ -19,7 +19,7 @@ class Ship extends Entity{
 		this.active = true;
         this.radius = 10
 
-        this.collision_mask = [Bullet, Ship, Particle]
+        this.set_collision_mask(Bullet, Ship, Particle)
 	}
 	update(ent) {
 		if (!this.active) return
