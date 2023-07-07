@@ -1,10 +1,10 @@
 const ASTEROID_SCALE_DEVIATION = 0.1
-const ASTEROID_RESOLUTION_MAX = 15
-const ASTEROID_RESOLUTION_MIN = 10
+const ASTEROID_RESOLUTION = 10
 const ASTEROID_MAX_START_SPEED = 1
 const ASTEROID_MIN_START_SPEED = 0.1
 const ASTEROID_MAX_START_RSPEED = 0.04
 const ASTEROID_CHILD_COUNT = 1
+const ASTEROID_CHILD_SCALE = 0.5
 const ASTEROID_DEFAULT_SIZE = 45
 const ASTEROID_MIN_PARENT_SIZE = 15//smallest px size of a child bearing asteroid
 //how far the velocity will deviate from aiming directly at the center of the screen
@@ -23,11 +23,7 @@ class Asteroid extends Entity {
 
 		this.rot_vel = Math.rand_range(-ASTEROID_MAX_START_RSPEED, ASTEROID_MAX_START_RSPEED)
 
-		this.heightMap = new HeightMap(
-			Math.floor(
-				Math.rand_range(ASTEROID_RESOLUTION_MIN, ASTEROID_RESOLUTION_MAX)
-			)
-		)
+		this.heightMap = new HeightMap(ASTEROID_RESOLUTION)
 		this.heightMap.randomize(
 			this.radius*(1-ASTEROID_SCALE_DEVIATION),
 			this.radius*(1+ASTEROID_SCALE_DEVIATION)
@@ -35,14 +31,14 @@ class Asteroid extends Entity {
 
         this.set_collision_mask(Asteroid, Particle)
 	}
-	collide(ent) {//spawn new asteroids if needed and kill the asteroid
-		super.collide(ent)
+	collide() {//spawn new asteroids if needed and kill the asteroid
+		super.collide(entities)
 		//create children
-		if (this.size >= ASTEROID_MIN_PARENT_SIZE)
+		if (this.radius >= ASTEROID_MIN_PARENT_SIZE)
 		{
 			for (var i=0;i<ASTEROID_CHILD_COUNT;i++)
 			{
-				ent.push(new Asteroid(this.pos, (this.MAXSIZE/15)-1))
+				entities.push(new Asteroid(this.pos, this.radius*ASTEROID_CHILD_SCALE))
 			}
 		}
 	}
