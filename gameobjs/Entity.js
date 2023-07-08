@@ -80,7 +80,8 @@ class Entity
     {
         let dir_a_t = Math.atan2(this.pos.y-a.pos.y, this.pos.x-a.pos.x)
         let dir_t_a = Math.atan2(a.pos.y-this.pos.y, a.pos.x-this.pos.x)
-        return Math.distance(this.pos, a.pos) <= this.heightMap.height_at(dir_t_a, this)+a.heightMap.height_at(dir_a_t, a)
+        let coll_dist = this.heightMap.height_at(dir_t_a-this.rot)+a.heightMap.height_at(dir_a_t-a.rot)
+        return Math.distance(this.pos, a.pos) <= coll_dist
     }
 	collide()
 	{
@@ -111,6 +112,6 @@ class Entity
 	}
     draw() {
 		ctx.setColor(this.color)
-		this.heightMap.draw(this.pos, 0)
+		this.heightMap.draw(this.pos, this.rot)
 	}
 }

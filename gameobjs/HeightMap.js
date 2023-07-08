@@ -3,7 +3,6 @@ class HeightMap
 	constructor(resolution, start_height = 0)
 	{
 		this.map = new Array(resolution).fill(start_height)
-		this.test_p = new Position2D(0,0)
 	}
 	get min()
 	{
@@ -49,17 +48,14 @@ class HeightMap
 		
 		return ret_particles
 	}
-	height_at(angle, a) {//returns the radius of the heightmap at a given angle to it
+	height_at(angle) {//returns the radius of the heightmap at a given angle to it
 		var stepWidth = (Math.PI*2)/(this.map.length)
 		angle = (angle)<0?(angle)+((Math.PI*2)*Math.ceil(Math.abs(angle)/(Math.PI*2))):
 		(angle)%(Math.PI*2)
 		let h1 = this.map[Math.floor(angle/stepWidth)%this.map.length]
 		let h2 = this.map[Math.ceil(angle/stepWidth)%this.map.length]
 		let perc = (angle/stepWidth)%1
-		
-		if (a==0) console.log(h1, h2, perc)
-		
-		if (a != 0) this.test_p = Position2D.fromRad(Math.lerp(h1, h2, perc), angle).add(a.pos)
+
 		return Math.lerp(h1, h2, perc)
 	}
 	draw(offset = new Position2D(0, 0), rot = 0)
@@ -72,7 +68,5 @@ class HeightMap
 		}, this)
 		ctx.closePath()
 		ctx.stroke()
-		ctx.setColor("red")
-		ctx.fillRect(this.test_p.x, this.test_p.y, 3, 3)
 	}
 }
