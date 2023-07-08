@@ -110,7 +110,7 @@ class Entity
         //create dust
         let dust = new Array(ENTITY_DUST_COUNT).fill().map(
             function() {
-                let dust_dir = Math.rand_range(0, 2 * Math.PI)
+                let dust_dir = Math.rand_angle()
                 return new Dust(
                     this.pos,
                     Position2D.fromRad(ENTITY_DUST_VEL, dust_dir),

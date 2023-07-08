@@ -4,11 +4,6 @@
 //create world object and pass it into entities
 //use thrust to limit ship vel
 
-Math.rand_range = function(min, max)
-{
-	return ( Math.random() * (max-min) ) + (min)
-}
-
 init = function() {
 	ctx.init()
 	keyboard = new _keyboard();

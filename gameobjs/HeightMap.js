@@ -23,7 +23,7 @@ class HeightMap
 	get_coords(i, offset = new Position2D(0, 0), rot = 0) {
 		return Position2D.fromRad(
 			this.map[i],
-			( (Math.PI * 2) * (i / this.map.length) ) + rot
+			( Math.PI2 * (i / this.map.length) ) + rot
 		).add(offset)
 	}
 	to_particles(offset = new Position2D(0, 0), rot = 0)
@@ -45,9 +45,9 @@ class HeightMap
 		return ret_particles
 	}
 	height_at(angle) {//returns the radius of the heightmap at a given angle to it
-		var stepWidth = (Math.PI*2)/(this.map.length)
-		angle = (angle)<0?(angle)+((Math.PI*2)*Math.ceil(Math.abs(angle)/(Math.PI*2))):
-		(angle)%(Math.PI*2)
+		var stepWidth = Math.PI2/(this.map.length)
+		angle = (angle)<0?(angle)+(Math.PI2*Math.ceil(Math.abs(angle)/Math.PI2)):
+		(angle)%Math.PI2
 		let h1 = this.map[Math.floor(angle/stepWidth)%this.map.length]
 		let h2 = this.map[Math.ceil(angle/stepWidth)%this.map.length]
 		let perc = (angle/stepWidth)%1
