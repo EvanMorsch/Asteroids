@@ -31,8 +31,8 @@ class Asteroid extends Entity {
 
         this.set_collision_mask(Asteroid, Particle)
 	}
-	collide() {//spawn new asteroids if needed and kill the asteroid
-		super.collide(entities)
+	collide(coll_with) {//spawn new asteroids if needed and kill the asteroid
+		super.collide(coll_with)
 		//create children
 		if (this.heightMap.min >= ASTEROID_MIN_PARENT_SIZE)
 		{

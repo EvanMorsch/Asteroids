@@ -34,14 +34,10 @@ class HeightMap
 		{
 			let endpoint_a = this.get_coords(i, offset, rot)
 			let endpoint_b = this.get_coords((i+1)%this.map.length, offset, rot)
-			let center = new Position2D((endpoint_a.x + endpoint_b.x) / 2, (endpoint_a.y + endpoint_b.y) / 2)
-			let vel_dir = Math.atan2(center.y - offset.y, center.x - offset.x)
-			let speed = Math.random()*2
 			ret_particles.push(
 				new Fragment(
 					endpoint_a,
-					endpoint_b,
-					new Position2D(speed, vel_dir)
+					endpoint_b
 				)
 			)
 		}

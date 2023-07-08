@@ -2,6 +2,7 @@ const ENTITY_DEFAULT_FRAGMENT_LIFETIME = 1000
 const ENTITY_DEFAULT_DUST_LIFETIME = 1000
 const ENTITY_DUST_VEL = 2.5
 const ENTITY_DUST_COUNT = 5
+const ENTITY_FRAGMENT_SPEED_RANGE = {min:0.5, max:2}
 
 class Entity
 {
@@ -83,17 +84,26 @@ class Entity
         let coll_dist = this.heightMap.height_at(dir_t_a-this.rot)+a.heightMap.height_at(dir_a_t-a.rot)
         return Math.distance(this.pos, a.pos) <= coll_dist
     }
-	collide()
+	collide(coll_with)
 	{
 		this.active = false
 
-        //create particles
+        //create particles with a zero vel
         let fragments = this.heightMap.to_particles(
             this.pos,
             this.rot
         )
+        //set vel and fade time
         fragments.forEach(
-            (a)=>{a.fade.fade_time = this.fragment_lifetime}
+            function(a)
+            {
+                let vel_dir = Math.atan2(a.pos.y - this.coll_bod.pos.y, a.pos.x - this.coll_bod.pos.x)
+			    let speed = Math.rand_range(ENTITY_FRAGMENT_SPEED_RANGE.min, ENTITY_FRAGMENT_SPEED_RANGE.max)
+                a.vel = Position2D.fromRad(speed, vel_dir).add(this.parent_bod.vel)
+                a.fade.fade_time = this.parent_bod.fragment_lifetime
+            },
+            //thisarg
+            {parent_bod: this, coll_bod: coll_with}
         )
 		entities.push(...fragments)
 
@@ -103,7 +113,7 @@ class Entity
                 let dust_dir = Math.rand_range(0, 2 * Math.PI)
                 return new Dust(
                     this.pos,
-                    this.vel.add(Position2D.fromRad(ENTITY_DUST_VEL, dust_dir)),
+                    Position2D.fromRad(ENTITY_DUST_VEL, dust_dir),
                     this.dust_lifetime
                 )
             }, this

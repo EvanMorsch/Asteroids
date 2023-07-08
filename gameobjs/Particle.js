@@ -38,7 +38,7 @@ class Dust extends Particle
 //fragments are line particles, they spin at random speeds
 class Fragment extends Particle
 {
-	constructor(a, b, vel, fade = -1)
+	constructor(a, b, vel = new Position2D(), fade = -1)
     {
         let frag_center = new Position2D((a.x + b.x) / 2, (a.y + b.y) / 2)
 		super(

@@ -70,9 +70,9 @@ class Ship extends Entity{
 			this.lastFire = Date.now()//update cooldown time
 		}
 	}
-	collide(ent) {//spawn in particles and retire the ship :(
+	collide(coll_with) {//spawn in particles and retire the ship :(
 		if (!this.active) return
-		super.collide()
+		super.collide(coll_with)
 		GAMEOVER = true
 	}
 	slow() {//slow down the positional velocity
