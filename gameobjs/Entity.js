@@ -1,5 +1,7 @@
 const ENTITY_DEFAULT_FRAGMENT_LIFETIME = 1000
 const ENTITY_DEFAULT_DUST_LIFETIME = 1000
+const ENTITY_DEFAULT_COLOR = "white"
+
 const ENTITY_DUST_VEL = 2.5
 const ENTITY_DUST_COUNT = 5
 const ENTITY_FRAGMENT_SPEED_RANGE = {min:0.5, max:2}
@@ -9,10 +11,8 @@ class Entity
 	constructor(pos, vel = new Position2D(0, 0), radius=10)
 	{
 		this.pos = pos
-		this.rot = 0
 
 		this.vel = vel
-		this.rot_vel = 0
 
 		this.active = true
         this.birth_time = Date.now()
@@ -21,7 +21,7 @@ class Entity
         this.fragment_lifetime = ENTITY_DEFAULT_FRAGMENT_LIFETIME
         this.dust_lifetime = ENTITY_DEFAULT_DUST_LIFETIME
 
-		this.color = "white"
+		this.color = ENTITY_DEFAULT_COLOR
 
         this._collision_mask = []
 	}
@@ -30,7 +30,6 @@ class Entity
 		if (!this.active) return
 
 		this.pos = this.pos.add(this.vel)
-		this.rot += this.rot_vel
 
 		this.keep_on_screen()
         //detect collisions
@@ -81,7 +80,7 @@ class Entity
     {
         let dir_a_t = Math.atan2(this.pos.y-a.pos.y, this.pos.x-a.pos.x)
         let dir_t_a = Math.atan2(a.pos.y-this.pos.y, a.pos.x-this.pos.x)
-        let coll_dist = this.heightMap.height_at(dir_t_a-this.rot)+a.heightMap.height_at(dir_a_t-a.rot)
+        let coll_dist = this.heightMap.height_at(dir_t_a-this.pos.r)+a.heightMap.height_at(dir_a_t-a.pos.r)
         return Math.distance(this.pos, a.pos) <= coll_dist
     }
 	collide(coll_with)
@@ -90,8 +89,7 @@ class Entity
 
         //create particles with a zero vel
         let fragments = this.heightMap.to_particles(
-            this.pos,
-            this.rot
+            this.pos
         )
         //set vel and fade time
         fragments.forEach(
@@ -122,6 +120,6 @@ class Entity
 	}
     draw() {
 		ctx.setColor(this.color)
-		this.heightMap.draw(this.pos, this.rot)
+		this.heightMap.draw(this.pos)
 	}
 }

@@ -20,20 +20,20 @@ class HeightMap
 			}
 		)
 	}
-	get_coords(i, offset = new Position2D(0, 0), rot = 0) {
+	get_coords(i, offset = new Position2D(0, 0)) {
 		return Position2D.fromRad(
 			this.map[i],
-			( Math.PI2 * (i / this.map.length) ) + rot
+			( Math.PI2 * (i / this.map.length) ) + offset.r
 		).add(offset)
 	}
-	to_particles(offset = new Position2D(0, 0), rot = 0)
+	to_particles(offset = new Position2D(0, 0))
 	{
 		var ret_particles = []
 
 		for (let i=0;i<this.map.length;i++)
 		{
-			let endpoint_a = this.get_coords(i, offset, rot)
-			let endpoint_b = this.get_coords((i+1)%this.map.length, offset, rot)
+			let endpoint_a = this.get_coords(i, offset)
+			let endpoint_b = this.get_coords((i+1)%this.map.length, offset)
 			ret_particles.push(
 				new Fragment(
 					endpoint_a,
@@ -54,13 +54,13 @@ class HeightMap
 
 		return Math.lerp(h1, h2, perc)
 	}
-	draw(offset = new Position2D(0, 0), rot = 0)
+	draw(offset = new Position2D(0, 0))
 	{
 		ctx.beginPath()
 		this.map.forEach(function(a, b) {
 			b==0 ? 
-			ctx.moveTo(this.get_coords(b, offset, rot).x, this.get_coords(b, offset, rot).y) : 
-			ctx.lineTo(this.get_coords(b, offset, rot).x, this.get_coords(b, offset, rot).y)
+			ctx.moveTo(this.get_coords(b, offset).x, this.get_coords(b, offset).y) : 
+			ctx.lineTo(this.get_coords(b, offset).x, this.get_coords(b, offset).y)
 		}, this)
 		ctx.closePath()
 		ctx.stroke()

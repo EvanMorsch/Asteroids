@@ -21,7 +21,7 @@ class Asteroid extends Entity {
 
 		super(pos, vel, size)
 
-		this.rot_vel = Math.rand_range(-ASTEROID_MAX_START_RSPEED, ASTEROID_MAX_START_RSPEED)
+		this.vel.r = Math.rand_range(-ASTEROID_MAX_START_RSPEED, ASTEROID_MAX_START_RSPEED)
 
 		this.heightMap = new HeightMap(ASTEROID_RESOLUTION)
 		this.heightMap.randomize(
@@ -41,5 +41,10 @@ class Asteroid extends Entity {
 				entities.push(new Asteroid(this.pos, this.heightMap.min*ASTEROID_CHILD_SCALE))
 			}
 		}
+	}
+	draw()
+	{
+		super.draw()
+		ctx.fillRect(this.pos.x, this.pos.y, 3, 3)
 	}
 }
