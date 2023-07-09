@@ -25,7 +25,6 @@ class Fade
     //apply fading to rgb value and return formatted string
 	applyTo(r, g, b)
 	{
-        //console.log(this.fade_time, this.start_time, this.elapsed, this.value)
 		return "rgba("+(r*this.value)+", "+(g*this.value)+", "+(b*this.value)+", 1)"
 	}
 }

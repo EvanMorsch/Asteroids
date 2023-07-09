@@ -38,23 +38,22 @@ class Dust extends Particle
 //fragments are line particles, they spin at random speeds
 class Fragment extends Particle
 {
-	constructor(a, b, vel, fade = -1)
+	constructor(a, b, vel = new Position2D(), fade = -1)
     {
-        let frag_center = new _vector((a.x + b.x) / 2, (a.y + b.y) / 2)
+        let frag_center = new Position2D((a.x + b.x) / 2, (a.y + b.y) / 2, Math.atan2(a.y - b.y, a.x - b.x))
 		super(
 			frag_center,
 			vel, 
 			fade
 		)
-		this.rot = Math.atan2(a.y - b.y, a.x - b.x)
-		this.rot_vel = Math.rand_range(...FRAGMENT_ROT_VEL_RANGE)
+		this.vel.r = Math.rand_range(...FRAGMENT_ROT_VEL_RANGE)
 		this.frag_len = Math.distance(a, frag_center)
 	}
 	draw() {
 		ctx.setColor( this.fade.applyTo(...PARTICLE_DEFAULT_COLOR) )
 		ctx.beginPath()
-		ctx.moveTo(this.pos.x + (Math.cos(this.rot) * this.frag_len), this.pos.y + (Math.sin(this.rot) * this.frag_len))
-		ctx.lineTo(this.pos.x - (Math.cos(this.rot) * this.frag_len), this.pos.y - (Math.sin(this.rot) * this.frag_len))
+		ctx.moveTo(this.pos.x + (Math.cos(this.pos.r) * this.frag_len), this.pos.y + (Math.sin(this.pos.r) * this.frag_len))
+		ctx.lineTo(this.pos.x - (Math.cos(this.pos.r) * this.frag_len), this.pos.y - (Math.sin(this.pos.r) * this.frag_len))
 		ctx.stroke()
 	}
 }
