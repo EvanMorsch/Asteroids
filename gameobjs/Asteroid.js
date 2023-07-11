@@ -3,8 +3,8 @@ const ASTEROID_RESOLUTION = 10
 const ASTEROID_MAX_START_SPEED = 1
 const ASTEROID_MIN_START_SPEED = 0.1
 const ASTEROID_MAX_START_RSPEED = 0.04
-const ASTEROID_CHILD_COUNT = 1
-const ASTEROID_CHILD_SCALE = 0.5
+const ASTEROID_CHILD_COUNT = 2
+const ASTEROID_CHILD_SCALE = 0.6
 const ASTEROID_DEFAULT_SIZE = 45
 const ASTEROID_MIN_PARENT_SIZE = 15//smallest px size of a child bearing asteroid
 //how far the velocity will deviate from aiming directly at the center of the screen

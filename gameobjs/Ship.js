@@ -1,22 +1,23 @@
+const SHIP_THRUST = 0.1 //thrust force
+const SHIP_RTHRUST = 0.004
+const SHIP_MAX_SPEED = 5 //when using speed limiter
+const SHIP_MAX_RSPEED = 0.1//rads per sec
+const SHIP_MUZZLE_VELOCITY = 10
+const SHIP_RELOAD_SPEED = 100//ms
+
+const SHIP_ROT_FRICTION = 5;//definitely deprecating...
+
 class Ship extends Entity{
 	constructor(pos = new Position2D(SCREENWIDTH/2, SCREENHEIGHT/2)) {
         super(pos)
-		this.fragment_lifetime = -1
-
-		this.THRUST = 0.1;//force applied when engines are on
-		this.SIZE = 10
-		this.MAXSPEED = 5
-		this.MUZZLEVELOCITY = 10
-		this.RELOADSPEED = 100//milliseconds
-		this.MAXROT = 0.1;
-		this.ROTSPEED = 0.004
-		this.ROTFRICTION = 5;//speed at which we slow as compared to accelerate
+		this.fragment_lifetime = -1 //dont fade
 	
 		this.acc = new Position2D(0, 0, 0)
+
 		this.lastFire = -Infinity//last time of fire
-		this.THRUSTINGFORWARD = false//tracks whether to play the thrust animation
-		this.ROTATING = false;
-		this.flightAssist = 1;//0-1
+		this.thrusting = false//whether to play the thrust animation
+		this.rotating = false;
+		this.flightAssist = 1;//0-1 --------------- CHANGE THIS
 		this.active = true;
         this.radius = 10
 
@@ -30,7 +31,7 @@ class Ship extends Entity{
 		if (keyboard.callKey(" ").poll()) this.shoot(ent)
 		if (keyboard.callKey("arrowup").poll()) this.flightAssist = Math.min(1, this.flightAssist+0.25)
 		if (keyboard.callKey("arrowdown").poll()) this.flightAssist = Math.max(0, this.flightAssist-0.25)
-	
+	 
 		if (keyboard.callKey("w").state) {
 			this.thrust(1)
 		} else if (keyboard.callKey("s").state) {
@@ -49,7 +50,7 @@ class Ship extends Entity{
 			this.rotate(-1)
 		} else {
 			if (Math.abs(this.vel.r)>0 && this.flightAssist>=0.25) {//if needed, slow down
-				this.rotate(-this.ROTFRICTION*(Math.sqrt(Math.abs(this.vel.r))*(this.vel.r/Math.abs(this.vel.r))))
+				this.rotate(-SHIP_ROT_FRICTION*(Math.sqrt(Math.abs(this.vel.r))*(this.vel.r/Math.abs(this.vel.r))))
 			} else {this.rotate(0)}
 		}
 		if (this.flightAssist>=0.75) this.limitRot()
@@ -58,11 +59,11 @@ class Ship extends Entity{
 	}
 	shoot(ent) {
 		SHOWINSTRUCTIONS = false
-		if ((Date.now()-this.lastFire)>this.RELOADSPEED) {//check if heve cooled down enough
+		if ((Date.now()-this.lastFire)>SHIP_RELOAD_SPEED) {//check if heve cooled down enough
 			ent.push(
 				new Bullet(
 					this.pos,
-					this.vel.add(Position2D.fromRad(this.MUZZLEVELOCITY, this.pos.r))
+					this.vel.add(Position2D.fromRad(SHIP_MUZZLE_VELOCITY, this.pos.r))
 				)
 			)
 			this.lastFire = Date.now()//update cooldown time
@@ -81,22 +82,22 @@ class Ship extends Entity{
 		var cs = Math.distance(this.vel, {x:0, y:0})//current speed
 		var dir = Math.atan2(this.vel.y, this.vel.x)
 		let old_r_vel = this.vel.r
-		this.vel = Position2D.fromRad(Math.min(this.MAXSPEED, cs), dir)
+		this.vel = Position2D.fromRad(Math.min(SHIP_MAX_SPEED, cs), dir)
 		this.vel.r = old_r_vel
 	}
 	limitRot() {
 		if (this.vel.r == 0) return
 		var dir = this.vel.r/Math.abs(this.vel.r)
-		this.vel.r = Math.min(this.MAXROT, Math.abs(this.vel.r))*dir
+		this.vel.r = Math.min(SHIP_MAX_RSPEED, Math.abs(this.vel.r))*dir
 	}
 	rotate(modifier) {
-		this.ROTATING = modifier
-		this.acc.r = this.ROTSPEED*modifier
+		this.rotating = modifier
+		this.acc.r = SHIP_RTHRUST*modifier
 	}
 	thrust(modifier) {
-		this.THRUSTINGFORWARD = modifier>0
-		this.acc.x = Math.cos(this.pos.r)*(this.THRUST*modifier)
-		this.acc.y = Math.sin(this.pos.r)*(this.THRUST*modifier)
+		this.thrusting = modifier>0
+		this.acc.x = Math.cos(this.pos.r)*(SHIP_THRUST*modifier)
+		this.acc.y = Math.sin(this.pos.r)*(SHIP_THRUST*modifier)
         if (modifier>0 && Math.random()<0.15)
         {
             //let dust_dir = this.pos.r + Math.PI + Math.rand_range(-0.5, 0.5)
@@ -120,42 +121,42 @@ class Ship extends Entity{
 		ctx.setColor("white")
 		//draw ship itself
 		ctx.beginPath()
-		ctx.moveTo(this.pos.x+(Math.cos(this.pos.r)*this.SIZE), this.pos.y+(Math.sin(this.pos.r)*this.SIZE))
-		ctx.lineTo(this.pos.x+(Math.cos(this.pos.r+2.25)*this.SIZE), this.pos.y+(Math.sin(this.pos.r+2.25)*this.SIZE))
+		ctx.moveTo(this.pos.x+(Math.cos(this.pos.r)*this.heightMap.max), this.pos.y+(Math.sin(this.pos.r)*this.heightMap.max))
+		ctx.lineTo(this.pos.x+(Math.cos(this.pos.r+2.25)*this.heightMap.max), this.pos.y+(Math.sin(this.pos.r+2.25)*this.heightMap.max))
 		ctx.lineTo(this.pos.x, this.pos.y)
-		ctx.lineTo(this.pos.x+(Math.cos(this.pos.r-2.25)*this.SIZE), this.pos.y+(Math.sin(this.pos.r-2.25)*this.SIZE))
+		ctx.lineTo(this.pos.x+(Math.cos(this.pos.r-2.25)*this.heightMap.max), this.pos.y+(Math.sin(this.pos.r-2.25)*this.heightMap.max))
 		ctx.closePath();
 		ctx.stroke()
 		
 		//draw flame
-		if (this.THRUSTINGFORWARD) {//is engine thrusting forward?
-			var cs = (Math.random()*(this.SIZE*0.5))+(this.SIZE*1.5)//1.5 is flame size, 0.5 is the amount of jitter
+		if (this.thrusting) {//is engine thrusting forward?
+			var cs = (Math.random()*(this.heightMap.max*0.5))+(this.heightMap.max*1.5)//1.5 is flame size, 0.5 is the amount of jitter
 			ctx.beginPath()
-			ctx.moveTo(this.pos.x+(Math.cos(this.pos.r+2.25)*(this.SIZE/2)), this.pos.y+(Math.sin(this.pos.r+2.25)*(this.SIZE/2)))
+			ctx.moveTo(this.pos.x+(Math.cos(this.pos.r+2.25)*(this.heightMap.max/2)), this.pos.y+(Math.sin(this.pos.r+2.25)*(this.heightMap.max/2)))
 			ctx.lineTo(this.pos.x-(Math.cos(this.pos.r)*cs), this.pos.y-(Math.sin(this.pos.r)*cs))
-			ctx.lineTo(this.pos.x+(Math.cos(this.pos.r-2.25)*(this.SIZE/2)), this.pos.y+(Math.sin(this.pos.r-2.25)*(this.SIZE/2)))
+			ctx.lineTo(this.pos.x+(Math.cos(this.pos.r-2.25)*(this.heightMap.max/2)), this.pos.y+(Math.sin(this.pos.r-2.25)*(this.heightMap.max/2)))
 			ctx.stroke()
 		}
 		//draw rotating thruster
-		if (Math.abs(this.ROTATING)>0.1) {//is engine thrusting at all?
-			var sp = this.ROTATING<0?//decide where the starting point is
-				{	x:this.pos.x+(Math.cos(this.pos.r+2.25)*(this.SIZE)), 
-					y:this.pos.y+(Math.sin(this.pos.r+2.25)*(this.SIZE))}
-				:{	x:this.pos.x+(Math.cos(this.pos.r-2.25)*(this.SIZE)), 
-					y:this.pos.y+(Math.sin(this.pos.r-2.25)*(this.SIZE))}
+		if (Math.abs(this.rotating)>0.1) {//is engine thrusting at all?
+			var sp = this.rotating<0?//decide where the starting point is
+				{	x:this.pos.x+(Math.cos(this.pos.r+2.25)*(this.heightMap.max)), 
+					y:this.pos.y+(Math.sin(this.pos.r+2.25)*(this.heightMap.max))}
+				:{	x:this.pos.x+(Math.cos(this.pos.r-2.25)*(this.heightMap.max)), 
+					y:this.pos.y+(Math.sin(this.pos.r-2.25)*(this.heightMap.max))}
 			ctx.beginPath()
 			ctx.moveTo(sp.x, sp.y)
-			ctx.lineTo(sp.x+(Math.cos(this.pos.r-0.5)*(this.SIZE*-0.3)), sp.y+(Math.sin(this.pos.r-0.5)*(this.SIZE*-0.3)))
-			ctx.lineTo(sp.x+(Math.cos(this.pos.r+0.5)*(this.SIZE*-0.3)), sp.y+(Math.sin(this.pos.r+0.5)*(this.SIZE*-0.3)))
+			ctx.lineTo(sp.x+(Math.cos(this.pos.r-0.5)*(this.heightMap.max*-0.3)), sp.y+(Math.sin(this.pos.r-0.5)*(this.heightMap.max*-0.3)))
+			ctx.lineTo(sp.x+(Math.cos(this.pos.r+0.5)*(this.heightMap.max*-0.3)), sp.y+(Math.sin(this.pos.r+0.5)*(this.heightMap.max*-0.3)))
 			ctx.closePath()
 			ctx.stroke()
 		}
 		
 		//draw reload meter
 		ctx.font = "10px sans-serif"
-		ctx.fillText("Re"+(((Date.now()-this.lastFire)/this.RELOADSPEED<1)?"loading...":"ady to fire!"), 0, 8)
+		ctx.fillText("Re"+(((Date.now()-this.lastFire)/SHIP_RELOAD_SPEED<1)?"loading...":"ady to fire!"), 0, 8)
 		ctx.strokeRect(0, 10, 100, 10)
-		ctx.fillRect(0, 10, (Math.min((Date.now()-this.lastFire)/this.RELOADSPEED, 1))*100, 10)
+		ctx.fillRect(0, 10, (Math.min((Date.now()-this.lastFire)/SHIP_RELOAD_SPEED, 1))*100, 10)
 		//draw flight assist meter
 		ctx.fillText("Flight assist level:", 0, 30)
 		ctx.strokeRect(0, 32, 100, 10)
