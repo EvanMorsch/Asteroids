@@ -1,11 +1,12 @@
 const SHIP_THRUST = 0.1 //thrust force
 const SHIP_RTHRUST = 0.004
 const SHIP_MAX_SPEED = 5 //when using speed limiter
-const SHIP_MAX_RSPEED = 0.1//rads per sec
+const SHIP_MAX_RSPEED = 0.08//rads per sec
 const SHIP_MUZZLE_VELOCITY = 10
 const SHIP_RELOAD_SPEED = 100//ms
 
-const SHIP_ROT_FRICTION = 5;//definitely deprecating...
+const SHIP_ROT_SLOW_SCALE = 10//definitely deprecating...
+const SHIP_ROT_SPEED_EPS = 0.002
 
 const SHIP_DUST_CHANCE = 0.15 //per frame chance to spawn dust
 const SHIP_DUST_SPEED = 5
@@ -20,7 +21,6 @@ class Ship extends Entity{
 
 		this.lastFire = -Infinity//last time of fire
 		this.thrusting = false//whether to play the thrust animation
-		this.rotating = false;
 		this.flightAssist = 1;//0-1 --------------- CHANGE THIS
 		this.active = true;
         this.radius = 10
@@ -56,25 +56,20 @@ class Ship extends Entity{
 			this.previous_error = 0
 		} else {
 			if (Math.abs(this.vel.r)>0 && this.flightAssist>=0.25) {//if needed, slow down
-				let dt = 1
-				let Kp = 15
-				let Ki = 0
-				let Kd = 2
-
-				let error = -this.vel.r
-				let proportional = error
-				this.integral += error * dt
-				let derivative = (error - this.previous_error) / dt
-				let output = Kp * proportional + Ki * this.integral + Kd * derivative
-				this.previous_error = error
-
-				console.log(`slowing from ${this.vel.r} with ${output*SHIP_RTHRUST}`)
-				this.rotate(output*SHIP_RTHRUST)
+				let slow_amnt = SHIP_RTHRUST*Math.sqrt(SHIP_ROT_SLOW_SCALE*Math.abs(this.vel.r))
+				this.rotate(this.vel.r > 0 ? -slow_amnt : slow_amnt)
 			} else {this.rotate(0)}
 		}
 		if (this.flightAssist>=0.75) this.limitRot()
+
 		//update vel
 		this.vel = this.vel.add(this.acc)
+
+		//kill eps
+		if (Math.abs(this.vel.r) < SHIP_ROT_SPEED_EPS)
+		{
+			this.vel.r = 0
+		}
 	}
 	shoot(ent) {
 		SHOWINSTRUCTIONS = false
@@ -110,7 +105,6 @@ class Ship extends Entity{
 		this.vel.r = Math.min(SHIP_MAX_RSPEED, Math.abs(this.vel.r))*dir
 	}
 	rotate(amnt) {
-		this.rotating = amnt
 		this.acc.r = amnt
 	}
 	thrust(amnt) {
@@ -154,8 +148,8 @@ class Ship extends Entity{
 			ctx.stroke()
 		}
 		//draw rotating thruster
-		if (Math.abs(this.rotating)>0.1) {//is engine thrusting at all?
-			var sp = this.rotating<0?//decide where the starting point is
+		if (Math.abs(this.acc.r)) {//is engine thrusting at all?
+			var sp = this.acc.r<0?//decide where the starting point is
 				{	x:this.pos.x+(Math.cos(this.pos.r+2.25)*(this.heightMap.max)), 
 					y:this.pos.y+(Math.sin(this.pos.r+2.25)*(this.heightMap.max))}
 				:{	x:this.pos.x+(Math.cos(this.pos.r-2.25)*(this.heightMap.max)), 
