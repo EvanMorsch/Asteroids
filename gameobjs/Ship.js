@@ -7,6 +7,10 @@ const SHIP_RELOAD_SPEED = 100//ms
 
 const SHIP_ROT_FRICTION = 5;//definitely deprecating...
 
+const SHIP_DUST_CHANCE = 0.15 //per frame chance to spawn dust
+const SHIP_DUST_SPEED = 5
+const SHIP_DUST_SPREAD = 0.25 //radians
+
 class Ship extends Entity{
 	constructor(pos = new Position2D(SCREENWIDTH/2, SCREENHEIGHT/2)) {
         super(pos)
@@ -28,19 +32,14 @@ class Ship extends Entity{
 
         super.update(ent)
 
-		if (keyboard.callKey(" ").poll()) this.shoot(ent)
 		if (keyboard.callKey("arrowup").poll()) this.flightAssist = Math.min(1, this.flightAssist+0.25)
 		if (keyboard.callKey("arrowdown").poll()) this.flightAssist = Math.max(0, this.flightAssist-0.25)
+
+		if (keyboard.callKey(" ").poll()) this.shoot(ent)
 	 
-		if (keyboard.callKey("w").state) {
-			this.thrust(1)
-		} else if (keyboard.callKey("s").state) {
-			this.thrust(-1)
-		} else {
-			this.thrust(0)
-			if (Math.distance(this.vel, {x:0, y:0})!=0) {
-				if (this.flightAssist>=0.5) this.slow()//slow us down if neot thrusting
-			}
+		this.thrust(keyboard.callKey("w").state * SHIP_THRUST)
+		if (!this.thrusting && Math.distance(this.vel, {x:0, y:0})!=0) {
+			if (this.flightAssist>=0.5) this.slow()//slow us down if neot thrusting
 		}
 		if (this.flightAssist>=1) this.limitVel()//it was hard to limit the thrust, so just correct any overages here
 	
@@ -94,22 +93,19 @@ class Ship extends Entity{
 		this.rotating = modifier
 		this.acc.r = SHIP_RTHRUST*modifier
 	}
-	thrust(modifier) {
-		this.thrusting = modifier>0
-		this.acc.x = Math.cos(this.pos.r)*(SHIP_THRUST*modifier)
-		this.acc.y = Math.sin(this.pos.r)*(SHIP_THRUST*modifier)
-        if (modifier>0 && Math.random()<0.15)
+	thrust(amnt) {
+		this.thrusting = amnt != 0
+		let old_accr = this.acc.r //retain old r
+		this.acc = Position2D.fromRad(amnt, this.pos.r)
+		this.acc.r = old_accr
+		//spawn dust
+        if (Math.random()<this.thrusting*SHIP_DUST_CHANCE)
         {
-            //let dust_dir = this.pos.r + Math.PI + Math.rand_range(-0.5, 0.5)
-            let dust_dir = this.pos.r + Math.PI + Math.rand_range(-0.25, 0.25)
-            let dust_speed = 5
+            let dust_dir = (this.pos.r + Math.PI) + Math.rand_range(-SHIP_DUST_SPREAD, SHIP_DUST_SPREAD)
             entities.push(
                 new Dust(
                     this.pos,
-                    this.vel.add(new Position2D(
-                        Math.cos(dust_dir)*dust_speed,
-                        Math.sin(dust_dir)*dust_speed
-                    )),
+                    this.vel.add(Position2D.fromRad(SHIP_DUST_SPEED, dust_dir)),
                     1000
                 )
             )
