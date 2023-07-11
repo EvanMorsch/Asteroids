@@ -25,6 +25,9 @@ class Ship extends Entity{
 		this.active = true;
         this.radius = 10
 
+		this.integral = 0
+		this.previous_error = 0
+
         this.set_collision_mask(Bullet, Ship, Particle)
 	}
 	update(ent) {
@@ -44,12 +47,29 @@ class Ship extends Entity{
 		if (this.flightAssist>=1) this.limitVel()//it was hard to limit the thrust, so just correct any overages here
 	
 		if (keyboard.callKey("d").state) {
-			this.rotate(1)
+			this.rotate(SHIP_RTHRUST)
+			this.integral = 0
+			this.previous_error = 0
 		} else if (keyboard.callKey("a").state) {
-			this.rotate(-1)
+			this.rotate(-SHIP_RTHRUST)
+			this.integral = 0
+			this.previous_error = 0
 		} else {
 			if (Math.abs(this.vel.r)>0 && this.flightAssist>=0.25) {//if needed, slow down
-				this.rotate(-SHIP_ROT_FRICTION*(Math.sqrt(Math.abs(this.vel.r))*(this.vel.r/Math.abs(this.vel.r))))
+				let dt = 1
+				let Kp = 15
+				let Ki = 0
+				let Kd = 2
+
+				let error = -this.vel.r
+				let proportional = error
+				this.integral += error * dt
+				let derivative = (error - this.previous_error) / dt
+				let output = Kp * proportional + Ki * this.integral + Kd * derivative
+				this.previous_error = error
+
+				console.log(`slowing from ${this.vel.r} with ${output*SHIP_RTHRUST}`)
+				this.rotate(output*SHIP_RTHRUST)
 			} else {this.rotate(0)}
 		}
 		if (this.flightAssist>=0.75) this.limitRot()
@@ -89,9 +109,9 @@ class Ship extends Entity{
 		var dir = this.vel.r/Math.abs(this.vel.r)
 		this.vel.r = Math.min(SHIP_MAX_RSPEED, Math.abs(this.vel.r))*dir
 	}
-	rotate(modifier) {
-		this.rotating = modifier
-		this.acc.r = SHIP_RTHRUST*modifier
+	rotate(amnt) {
+		this.rotating = amnt
+		this.acc.r = amnt
 	}
 	thrust(amnt) {
 		this.thrusting = amnt != 0
