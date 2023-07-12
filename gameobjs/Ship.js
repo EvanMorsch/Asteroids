@@ -8,6 +8,8 @@ const SHIP_RELOAD_SPEED = 100//ms
 const SHIP_ROT_SLOW_SCALE = 10//definitely deprecating...
 const SHIP_ROT_SPEED_EPS = 0.002
 
+const SHIP_VEL_SLOW_SCALE = 0.05
+
 const SHIP_DUST_CHANCE = 0.15 //per frame chance to spawn dust
 const SHIP_DUST_SPEED = 5
 const SHIP_DUST_SPREAD = 0.25 //radians
@@ -25,6 +27,8 @@ class Ship extends Entity{
 		this.active = true;
         this.radius = 10
 
+		this.speed_limit = true
+
 		this.integral = 0
 		this.previous_error = 0
 
@@ -40,11 +44,32 @@ class Ship extends Entity{
 
 		if (keyboard.callKey(" ").poll()) this.shoot(ent)
 	 
-		this.thrust(keyboard.callKey("w").state * SHIP_THRUST)
-		if (!this.thrusting && Math.distance(this.vel, {x:0, y:0})!=0) {
-			if (this.flightAssist>=0.5) this.slow()//slow us down if neot thrusting
+		if (this.thrusting = keyboard.callKey("w").state)
+		{
+			this.accelerate_torward(SHIP_THRUST, this.pos.r)
+
+			//spawn dust
+			if (Math.random()<this.thrusting*SHIP_DUST_CHANCE)
+			{
+				let dust_dir = (this.pos.r + Math.PI) + Math.rand_range(-SHIP_DUST_SPREAD, SHIP_DUST_SPREAD)
+				entities.push(
+					new Dust(
+						this.pos,
+						this.vel.add(Position2D.fromRad(SHIP_DUST_SPEED, dust_dir)),
+						1000
+					)
+				)
+			}
 		}
-		if (this.flightAssist>=1) this.limitVel()//it was hard to limit the thrust, so just correct any overages here
+		else
+		{
+			if (this.flightAssist>=0.5)
+			{
+				let r = Math.distance(this.vel, {x:0, y:0})
+				let theta = Math.atan2(this.vel.y, this.vel.x)
+				this.accelerate_torward(r*-SHIP_VEL_SLOW_SCALE, theta) //slow us down if neot thrusting
+			}
+		}
 	
 		if (keyboard.callKey("d").state) {
 			this.rotate(SHIP_RTHRUST)
@@ -61,6 +86,7 @@ class Ship extends Entity{
 			} else {this.rotate(0)}
 		}
 		if (this.flightAssist>=0.75) this.limitRot()
+		this.speed_limit = this.flightAssist>=1
 
 		//update vel
 		this.vel = this.vel.add(this.acc)
@@ -89,41 +115,32 @@ class Ship extends Entity{
 		GAMEOVER = true
 	}
 	slow() {//slow down the positional velocity
-		if (this.vel.x!=0) this.acc.x = -0.05*(Math.sqrt(Math.abs(this.vel.x))*(this.vel.x/Math.abs(this.vel.x)))
-		if (this.vel.y!=0) this.acc.y = -0.05*(Math.sqrt(Math.abs(this.vel.y))*(this.vel.y/Math.abs(this.vel.y)))
-	}
-	limitVel() {//normalize to the max speed
-		var cs = Math.distance(this.vel, {x:0, y:0})//current speed
-		var dir = Math.atan2(this.vel.y, this.vel.x)
+		let theta = Math.atan2(this.vel.y, this.vel.x)
+		let r = Math.distance(this.vel, {x:0, y:0})
+
 		let old_r_vel = this.vel.r
-		this.vel = Position2D.fromRad(Math.min(SHIP_MAX_SPEED, cs), dir)
+		this.vel = Position2D.fromRad(Math.max(0, r * SHIP_VEL_SLOW_SCALE), theta)
 		this.vel.r = old_r_vel
 	}
 	limitRot() {
-		if (this.vel.r == 0) return
-		var dir = this.vel.r/Math.abs(this.vel.r)
-		this.vel.r = Math.min(SHIP_MAX_RSPEED, Math.abs(this.vel.r))*dir
+		var sign = this.vel.r < 0 ? -1 : 1;
+		this.vel.r = Math.min(SHIP_MAX_RSPEED, Math.abs(this.vel.r)) * sign
 	}
 	rotate(amnt) {
 		this.acc.r = amnt
 	}
-	thrust(amnt) {
-		this.thrusting = amnt != 0
-		let old_accr = this.acc.r //retain old r
-		this.acc = Position2D.fromRad(amnt, this.pos.r)
-		this.acc.r = old_accr
-		//spawn dust
-        if (Math.random()<this.thrusting*SHIP_DUST_CHANCE)
-        {
-            let dust_dir = (this.pos.r + Math.PI) + Math.rand_range(-SHIP_DUST_SPREAD, SHIP_DUST_SPREAD)
-            entities.push(
-                new Dust(
-                    this.pos,
-                    this.vel.add(Position2D.fromRad(SHIP_DUST_SPEED, dust_dir)),
-                    1000
-                )
-            )
-        }
+	accelerate_torward(r, theta) {
+		this.acc = Position2D.fromRad(r, theta, this.acc.r)
+
+		if (this.speed_limit)
+		{
+			if (Math.distance(this.vel.add(this.acc), {x:0, y:0}) > SHIP_MAX_SPEED)
+			{
+				let r = Math.distance(this.vel.add(this.acc), {x:0, y:0})
+				let theta = Math.atan2(this.vel.y, this.vel.x)
+				this.acc = this.acc.add(Position2D.fromRad(SHIP_MAX_SPEED - r, theta))
+			}
+		}
     }
 	draw() {
 		super.draw()
