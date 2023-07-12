@@ -85,7 +85,7 @@ class Ship extends Entity{
 				this.rotate(this.vel.r > 0 ? -slow_amnt : slow_amnt)
 			} else {this.rotate(0)}
 		}
-		if (this.flightAssist>=0.75) this.limitRot()
+		this.rspeed_limit = this.flightAssist>=0.75
 		this.speed_limit = this.flightAssist>=1
 
 		//update vel
@@ -110,17 +110,8 @@ class Ship extends Entity{
 		}
 	}
 	collide(coll_with) {//spawn in particles and retire the ship :(
-		if (!this.active) return
 		super.collide(coll_with)
 		GAMEOVER = true
-	}
-	slow() {//slow down the positional velocity
-		let theta = Math.atan2(this.vel.y, this.vel.x)
-		let r = Math.distance(this.vel, {x:0, y:0})
-
-		let old_r_vel = this.vel.r
-		this.vel = Position2D.fromRad(Math.max(0, r * SHIP_VEL_SLOW_SCALE), theta)
-		this.vel.r = old_r_vel
 	}
 	limitRot() {
 		var sign = this.vel.r < 0 ? -1 : 1;
@@ -128,6 +119,19 @@ class Ship extends Entity{
 	}
 	rotate(amnt) {
 		this.acc.r = amnt
+
+		if (this.rspeed_limit)
+		{
+			let r = this.vel.r + this.acc.r
+			if (r > SHIP_MAX_RSPEED)
+			{
+				this.acc.r += (SHIP_MAX_RSPEED - r)
+			}
+			else if (r < -SHIP_MAX_RSPEED)
+			{
+				this.acc.r += (-SHIP_MAX_RSPEED - r)
+			}
+		}
 	}
 	accelerate_torward(r, theta) {
 		this.acc = Position2D.fromRad(r, theta, this.acc.r)
