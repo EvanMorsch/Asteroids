@@ -14,6 +14,8 @@ const SHIP_DUST_CHANCE = 0.15 //per frame chance to spawn dust
 const SHIP_DUST_SPEED = 5
 const SHIP_DUST_SPREAD = 0.25 //radians
 
+const SHIP_SIZE = 10
+
 class Ship extends Entity{
 	constructor(pos = new Position2D(SCREENWIDTH/2, SCREENHEIGHT/2)) {
         super(pos)
@@ -25,13 +27,15 @@ class Ship extends Entity{
 		this.thrusting = false//whether to play the thrust animation
 		this.flightAssist = 1;//0-1 --------------- CHANGE THIS
 		this.active = true;
-        this.radius = 10
 
 		this.speed_limit = true
 
-		this.integral = 0
-		this.previous_error = 0
-
+		this.heightMap = new HeightMap(6, SHIP_SIZE)
+		//preset heights
+		this.heightMap.map[1] = 5
+		this.heightMap.map[3] = 0
+		this.heightMap.map[5] = 5
+		
         this.set_collision_mask(Bullet, Ship, Particle)
 	}
 	update(ent) {
@@ -73,12 +77,8 @@ class Ship extends Entity{
 	
 		if (keyboard.callKey("d").state) {
 			this.rotate(SHIP_RTHRUST)
-			this.integral = 0
-			this.previous_error = 0
 		} else if (keyboard.callKey("a").state) {
 			this.rotate(-SHIP_RTHRUST)
-			this.integral = 0
-			this.previous_error = 0
 		} else {
 			if (Math.abs(this.vel.r)>0 && this.flightAssist>=0.25) {//if needed, slow down
 				let slow_amnt = SHIP_RTHRUST*Math.sqrt(SHIP_ROT_SLOW_SCALE*Math.abs(this.vel.r))
@@ -113,10 +113,6 @@ class Ship extends Entity{
 		super.collide(coll_with)
 		GAMEOVER = true
 	}
-	limitRot() {
-		var sign = this.vel.r < 0 ? -1 : 1;
-		this.vel.r = Math.min(SHIP_MAX_RSPEED, Math.abs(this.vel.r)) * sign
-	}
 	rotate(amnt) {
 		this.acc.r = amnt
 
@@ -150,14 +146,6 @@ class Ship extends Entity{
 		super.draw()
 		if (!this.active) return
 		ctx.setColor("white")
-		//draw ship itself
-		ctx.beginPath()
-		ctx.moveTo(this.pos.x+(Math.cos(this.pos.r)*this.heightMap.max), this.pos.y+(Math.sin(this.pos.r)*this.heightMap.max))
-		ctx.lineTo(this.pos.x+(Math.cos(this.pos.r+2.25)*this.heightMap.max), this.pos.y+(Math.sin(this.pos.r+2.25)*this.heightMap.max))
-		ctx.lineTo(this.pos.x, this.pos.y)
-		ctx.lineTo(this.pos.x+(Math.cos(this.pos.r-2.25)*this.heightMap.max), this.pos.y+(Math.sin(this.pos.r-2.25)*this.heightMap.max))
-		ctx.closePath();
-		ctx.stroke()
 		
 		//draw flame
 		if (this.thrusting) {//is engine thrusting forward?
