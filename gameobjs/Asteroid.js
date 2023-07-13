@@ -38,7 +38,7 @@ class Asteroid extends Entity {
 		{
 			for (var i=0;i<ASTEROID_CHILD_COUNT;i++)
 			{
-				entities.push(new Asteroid(this.pos, this.heightMap.min*ASTEROID_CHILD_SCALE))
+				world.entities.push(new Asteroid(this.pos, this.heightMap.min*ASTEROID_CHILD_SCALE))
 			}
 		}
 	}

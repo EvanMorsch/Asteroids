@@ -33,7 +33,7 @@ class Entity
 
 		this.keep_on_screen()
         //detect collisions
-        let collidables = entities.filter(
+        let collidables = world.entities.filter(
             //filter for non-masked entities
             function(a)
             {
@@ -103,7 +103,7 @@ class Entity
             //thisarg
             {parent_bod: this, coll_bod: coll_with}
         )
-		entities.push(...fragments)
+		world.entities.push(...fragments)
 
         //create dust
         let dust = new Array(ENTITY_DUST_COUNT).fill().map(
@@ -116,7 +116,7 @@ class Entity
                 )
             }, this
         )
-        entities.push(...dust)
+        world.entities.push(...dust)
 	}
     draw() {
 		ctx.setColor(this.color)

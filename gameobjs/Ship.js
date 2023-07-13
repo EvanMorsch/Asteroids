@@ -56,7 +56,7 @@ class Ship extends Entity{
 			if (Math.random()<this.thrusting*SHIP_DUST_CHANCE)
 			{
 				let dust_dir = (this.pos.r + Math.PI) + Math.rand_range(-SHIP_DUST_SPREAD, SHIP_DUST_SPREAD)
-				entities.push(
+				world.entities.push(
 					new Dust(
 						this.pos,
 						this.vel.add(Position2D.fromRad(SHIP_DUST_SPEED, dust_dir)),
