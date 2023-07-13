@@ -11,7 +11,7 @@ init = function() {
 	keyboard.addKey(" ", true)
 
 	world = new World()
-	world.init()
+	world.init(1)
 
 	loop();
 }

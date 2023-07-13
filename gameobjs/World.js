@@ -4,8 +4,8 @@ class World
     {
         this.entities = []
         this.paused = false
-        this.level = 0
-        this.showInstructions = false
+        this.level = -1
+        this.showInstructions = true
         this.gameOver = false
         this.initTime = undefined
     }
@@ -15,8 +15,16 @@ class World
         this.level = level
         this.gameOver = false
         this.paused = false
-        this.showInstructions = true
         this.initTime = Date.now()
+        for (let i of Array(1))
+        {
+            this.entities.push(new Asteroid(
+                new Position2D(
+                    Math.round(Math.random())*SCREENWIDTH,
+                    Math.round(Math.random())*SCREENHEIGHT
+                )
+            ))
+        }
     }
     update() {
         if (this.paused) return
@@ -24,16 +32,7 @@ class World
         this.entities = this.entities.filter(a=>a.active)
 
         if (this.entities.length==1) {
-            this.level++
-            for (let i in new Array(10))
-            {
-                this.entities.push(new Asteroid(
-                    new Position2D(
-                        Math.round(Math.random())*SCREENWIDTH,
-                        Math.round(Math.random())*SCREENHEIGHT
-                    )
-                ))
-            }
+            this.init(this.level + 1)
         }
     }
     draw()

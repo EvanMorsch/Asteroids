@@ -98,7 +98,7 @@ class Ship extends Entity{
 		}
 	}
 	shoot(ent) {
-		SHOWINSTRUCTIONS = false
+		world.showInstructions = false
 		if ((Date.now()-this.lastFire)>SHIP_RELOAD_SPEED) {//check if heve cooled down enough
 			ent.push(
 				new Bullet(
@@ -111,7 +111,7 @@ class Ship extends Entity{
 	}
 	collide(coll_with) {//spawn in particles and retire the ship :(
 		super.collide(coll_with)
-		GAMEOVER = true
+		world.gameOver = true
 	}
 	rotate(amnt) {
 		this.acc.r = amnt
