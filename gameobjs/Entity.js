@@ -8,8 +8,10 @@ const ENTITY_FRAGMENT_SPEED_RANGE = {min:0.5, max:2}
 
 class Entity
 {
-	constructor(pos, vel = new Position2D(0, 0), radius=10)
+	constructor(world, pos, vel = new Position2D(0, 0), radius=10)
 	{
+        this.world = world
+
 		this.pos = pos
 
 		this.vel = vel
@@ -33,7 +35,7 @@ class Entity
 
 		this.keep_on_screen()
         //detect collisions
-        let collidables = world.entities.filter(
+        let collidables = this.world.entities.filter(
             //filter for non-masked entities
             function(a)
             {
@@ -103,20 +105,21 @@ class Entity
             //thisarg
             {parent_bod: this, coll_bod: coll_with}
         )
-		world.entities.push(...fragments)
+		this.world.entities.push(...fragments)
 
         //create dust
         let dust = new Array(ENTITY_DUST_COUNT).fill().map(
             function() {
                 let dust_dir = Math.rand_angle()
                 return new Dust(
+                    this.world,
                     this.pos,
                     Position2D.fromRad(ENTITY_DUST_VEL, dust_dir),
                     this.dust_lifetime
                 )
             }, this
         )
-        world.entities.push(...dust)
+        this.world.entities.push(...dust)
 	}
     draw() {
 		ctx.setColor(this.color)

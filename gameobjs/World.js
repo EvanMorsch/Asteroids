@@ -14,7 +14,7 @@ class World
     }
     init(level)
     {
-        this.entities = [new Ship()]
+        this.entities = [new Ship(this)]
         this.level = level
         this.gameOver = false
         this.paused = false
@@ -22,6 +22,7 @@ class World
         for (let i of Array(1))
         {
             this.entities.push(new Asteroid(
+                this, 
                 new Position2D(
                     Math.round(Math.random())*SCREENWIDTH,
                     Math.round(Math.random())*SCREENHEIGHT
