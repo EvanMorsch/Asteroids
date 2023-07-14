@@ -43,12 +43,12 @@ class Ship extends Entity{
 
         super.update(ent)
 
-		if (keyboard.callKey("arrowup").poll()) this.flightAssist = Math.min(1, this.flightAssist+0.25)
-		if (keyboard.callKey("arrowdown").poll()) this.flightAssist = Math.max(0, this.flightAssist-0.25)
+		if (world.keyboard.callKey("arrowup").poll()) this.flightAssist = Math.min(1, this.flightAssist+0.25)
+		if (world.keyboard.callKey("arrowdown").poll()) this.flightAssist = Math.max(0, this.flightAssist-0.25)
 
-		if (keyboard.callKey(" ").poll()) this.shoot(ent)
+		if (world.keyboard.callKey(" ").poll()) this.shoot(ent)
 	 
-		if (this.thrusting = keyboard.callKey("w").state)
+		if (this.thrusting = world.keyboard.callKey("w").state)
 		{
 			this.accelerate_torward(SHIP_THRUST, this.pos.r)
 
@@ -75,9 +75,9 @@ class Ship extends Entity{
 			}
 		}
 	
-		if (keyboard.callKey("d").state) {
+		if (world.keyboard.callKey("d").state) {
 			this.rotate(SHIP_RTHRUST)
-		} else if (keyboard.callKey("a").state) {
+		} else if (world.keyboard.callKey("a").state) {
 			this.rotate(-SHIP_RTHRUST)
 		} else {
 			if (Math.abs(this.vel.r)>0 && this.flightAssist>=0.25) {//if needed, slow down
