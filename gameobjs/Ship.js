@@ -42,6 +42,8 @@ class Ship extends Entity{
 		if (!this.active) return
 
         super.update(ent)
+		//prepare acc
+		this.acc = new Position2D()
 
 		if (world.keyboard.callKey("arrowup").poll()) this.flightAssist = Math.min(1, this.flightAssist+0.25)
 		if (world.keyboard.callKey("arrowdown").poll()) this.flightAssist = Math.max(0, this.flightAssist-0.25)

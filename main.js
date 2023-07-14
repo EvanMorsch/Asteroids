@@ -8,12 +8,14 @@
 	//new World.Entity
 	//world.CreateEntity()
 
+var world
+
 init = function() {
 	ctx.init()
 	let keyboard = new _keyboard()
 	keyboard.addKey(" ", true)
 
-	world = new World(keyboard)
+	world = new World(ctx, keyboard)
 	world.init(1)
 
 	loop();

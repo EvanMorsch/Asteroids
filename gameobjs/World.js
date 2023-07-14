@@ -1,6 +1,6 @@
 class World
 {
-    constructor(keyboard)
+    constructor(ctx, keyboard)
     {
         this.entities = []
         this.paused = false
@@ -8,6 +8,8 @@ class World
         this.showInstructions = true
         this.gameOver = false
         this.initTime = undefined
+
+        this.ctx = ctx
         this.keyboard = keyboard
     }
     init(level)
