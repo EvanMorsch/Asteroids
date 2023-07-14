@@ -4,8 +4,8 @@ const FRAGMENT_ROT_VEL_RANGE = [-0.05, 0.05]
 
 class Particle extends Entity
 {
-	constructor(pos, vel, fade = -1) {//if fade == -1, itll never fade
-        super(pos, vel)
+	constructor(world, pos, vel, fade = -1) {//if fade == -1, itll never fade
+        super(world, pos, vel)
 
 		this.fade = new Fade(fade)
 
@@ -25,9 +25,10 @@ class Particle extends Entity
 //created by engine and explosions as 'dust particles'
 class Dust extends Particle
 {
-    constructor(pos, vel, fade = -1)
+    constructor(world, pos, vel, fade = -1)
     {
 		super(
+			world, 
 			pos, 
 			vel, 
 			fade
@@ -38,10 +39,11 @@ class Dust extends Particle
 //fragments are line particles, they spin at random speeds
 class Fragment extends Particle
 {
-	constructor(a, b, vel = new Position2D(), fade = -1)
+	constructor(world, a, b, vel = new Position2D(), fade = -1)
     {
         let frag_center = new Position2D((a.x + b.x) / 2, (a.y + b.y) / 2, Math.atan2(a.y - b.y, a.x - b.x))
 		super(
+			world, 
 			frag_center,
 			vel, 
 			fade

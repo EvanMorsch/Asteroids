@@ -17,8 +17,8 @@ const SHIP_DUST_SPREAD = 0.25 //radians
 const SHIP_SIZE = 10
 
 class Ship extends Entity{
-	constructor(pos = new Position2D(SCREENWIDTH/2, SCREENHEIGHT/2)) {
-        super(pos)
+	constructor(world, pos = new Position2D(SCREENWIDTH/2, SCREENHEIGHT/2)) {
+        super(world, pos)
 		this.fragment_lifetime = -1 //dont fade
 	
 		this.acc = new Position2D(0, 0, 0)
@@ -42,13 +42,15 @@ class Ship extends Entity{
 		if (!this.active) return
 
         super.update(ent)
+		//prepare acc
+		this.acc = new Position2D()
 
-		if (keyboard.callKey("arrowup").poll()) this.flightAssist = Math.min(1, this.flightAssist+0.25)
-		if (keyboard.callKey("arrowdown").poll()) this.flightAssist = Math.max(0, this.flightAssist-0.25)
+		if (this.world.keyboard.callKey("arrowup").poll()) this.flightAssist = Math.min(1, this.flightAssist+0.25)
+		if (this.world.keyboard.callKey("arrowdown").poll()) this.flightAssist = Math.max(0, this.flightAssist-0.25)
 
-		if (keyboard.callKey(" ").poll()) this.shoot(ent)
+		if (this.world.keyboard.callKey(" ").poll()) this.shoot(ent)
 	 
-		if (this.thrusting = keyboard.callKey("w").state)
+		if (this.thrusting = this.world.keyboard.callKey("w").state)
 		{
 			this.accelerate_torward(SHIP_THRUST, this.pos.r)
 
@@ -56,8 +58,9 @@ class Ship extends Entity{
 			if (Math.random()<this.thrusting*SHIP_DUST_CHANCE)
 			{
 				let dust_dir = (this.pos.r + Math.PI) + Math.rand_range(-SHIP_DUST_SPREAD, SHIP_DUST_SPREAD)
-				entities.push(
+				this.world.entities.push(
 					new Dust(
+						this.world, 
 						this.pos,
 						this.vel.add(Position2D.fromRad(SHIP_DUST_SPEED, dust_dir)),
 						1000
@@ -75,9 +78,9 @@ class Ship extends Entity{
 			}
 		}
 	
-		if (keyboard.callKey("d").state) {
+		if (this.world.keyboard.callKey("d").state) {
 			this.rotate(SHIP_RTHRUST)
-		} else if (keyboard.callKey("a").state) {
+		} else if (this.world.keyboard.callKey("a").state) {
 			this.rotate(-SHIP_RTHRUST)
 		} else {
 			if (Math.abs(this.vel.r)>0 && this.flightAssist>=0.25) {//if needed, slow down
@@ -98,10 +101,11 @@ class Ship extends Entity{
 		}
 	}
 	shoot(ent) {
-		SHOWINSTRUCTIONS = false
+		this.world.showInstructions = false
 		if ((Date.now()-this.lastFire)>SHIP_RELOAD_SPEED) {//check if heve cooled down enough
 			ent.push(
 				new Bullet(
+					this.world, 
 					this.pos,
 					this.vel.add(Position2D.fromRad(SHIP_MUZZLE_VELOCITY, this.pos.r))
 				)
@@ -111,7 +115,7 @@ class Ship extends Entity{
 	}
 	collide(coll_with) {//spawn in particles and retire the ship :(
 		super.collide(coll_with)
-		GAMEOVER = true
+		this.world.gameOver = true
 	}
 	rotate(amnt) {
 		this.acc.r = amnt

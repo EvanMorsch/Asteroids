@@ -36,6 +36,7 @@ class HeightMap
 			let endpoint_b = this.get_coords((i+1)%this.map.length, offset)
 			ret_particles.push(
 				new Fragment(
+					world,
 					endpoint_a,
 					endpoint_b
 				)
