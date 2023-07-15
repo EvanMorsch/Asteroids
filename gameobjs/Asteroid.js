@@ -45,6 +45,5 @@ class Asteroid extends Entity {
 	draw()
 	{
 		super.draw()
-		ctx.fillRect(this.pos.x, this.pos.y, 3, 3)
 	}
 }

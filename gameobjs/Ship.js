@@ -3,7 +3,7 @@ const SHIP_RTHRUST = 0.004
 const SHIP_MAX_SPEED = 5 //when using speed limiter
 const SHIP_MAX_RSPEED = 0.08//rads per sec
 const SHIP_MUZZLE_VELOCITY = 10
-const SHIP_RELOAD_SPEED = 100//ms
+const SHIP_RELOAD_SPEED = 50//ms
 
 const SHIP_ROT_SLOW_SCALE = 10//definitely deprecating...
 const SHIP_ROT_SPEED_EPS = 0.002

@@ -1,3 +1,5 @@
+const WORLD_DEFAULT_ASTEROIDS = 3
+
 class World
 {
     constructor(ctx, keyboard)
@@ -19,7 +21,7 @@ class World
         this.gameOver = false
         this.paused = false
         this.initTime = Date.now()
-        for (let i of Array(1))
+        for (let i of Array(WORLD_DEFAULT_ASTEROIDS + level))
         {
             this.entities.push(new Asteroid(
                 this, 
